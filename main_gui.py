@@ -16,6 +16,7 @@ def make_db():
 
     c.execute("""CREATE TABLE projects(
         proj_name text,
+        file_name text,
         proj_files blob
         )""")
 
@@ -97,9 +98,6 @@ def show_all_query():
 ## pieces into it. 
 def viewResultsGenerator(projectList, elementFrame):
 
-    #def isWorking():
-    #    print("button is working...")
-
     test_img = PhotoImage(file="./images/stan-medium.png")
     ## make a list (array) to hold the frames that will be built
     frameList = []
@@ -154,6 +152,7 @@ def viewResultsGenerator(projectList, elementFrame):
     listSize = len(frameList)
     listPos = 0
           
+    ## arrange the frame elements in a grid in the viewframe, in 4 columns
     for y in range(math.ceil(listSize/4)):
         for x in range(4):
             try: 
@@ -208,10 +207,6 @@ class MyGUI:
         self.newProjectBt.pack()
 
 
-        ## defining the main right area of the program. This area
-        ## will hold the search results, and will show all the
-        ## STL projects in general.
-
         #### ----- Now building the right side ---------
         
         ## defining the main right area of the program. This area
@@ -239,7 +234,6 @@ class MyGUI:
         ## make a frame that will only hold the results elements
         self.elementFrame = Frame(self.canvas)
         ### DONT PACK THE ELEMENTFRAME!!! Its handled by the canvas window
-
 
         self.elementFrame.bind(
             "<Configure>",
