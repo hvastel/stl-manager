@@ -24,9 +24,9 @@ def make_db():
     conn.close()
 
 
-#def refresh(self):
-#    self.destroy()
-#    self.__init__()
+#def refresh(self.elementFrame):
+#    self.elementFrame.destroy()
+#    self.elementFrame.__init__()
 
 
 ## function to open the "add new project" window
@@ -180,6 +180,11 @@ class MyGUI:
             #add_project_gui(self)
             add_project_gui()
 
+
+        def refresh_elements():
+            self.elementFrame.destroy()
+            self.elementFrame.__init__()
+
         #def refresh_root():
         #    refresh(self)
 
@@ -196,7 +201,8 @@ class MyGUI:
         self.searchFrame.pack()
         ## defining the search field and button
         self.searchEntry = Entry(self.searchFrame)
-        self.searchBt = Button(self.searchFrame, text="search")
+        ## ATTENTION:  Using this button for testing at the moment 
+        self.searchBt = Button(self.searchFrame, text="search", command=refresh_elements)
 
         ## packing the search field and button
         self.searchEntry.pack(side=LEFT, padx=10)

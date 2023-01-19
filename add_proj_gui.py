@@ -2,7 +2,11 @@ from tkinter import *
 from PIL import ImageTk, ImageTk
 import sqlite3
 from tkinter.filedialog import askopenfilename
-from new_main import *
+from pathlib import Path
+import os
+from tkinter import messagebox
+
+#from main_gui import *
 
 
 # Convert digital data to binary format
@@ -24,7 +28,7 @@ class add_project_gui:
         self.root.geometry('650x300')
 
         ## Label for project name
-        proj_name_lb = Label(self.root, text='Project Name')
+        proj_name_lb = Label(self.root, text='Project Name', font=("None", 14))
         proj_name_lb.pack(pady=20)
 
         ## entry for project name
@@ -32,7 +36,7 @@ class add_project_gui:
         self.proj_name_ent.pack()
 
         ## label for file location
-        self.proj_location_lb = Label(self.root, text='Project Location')
+        self.proj_location_lb = Label(self.root, text='Project Location', font=("None", 14))
         self.proj_location_lb.pack(padx=10, pady=10)
 
         ## frame to hold the file entry and selector button 
@@ -56,6 +60,9 @@ class add_project_gui:
 
         ## pack the file selector button
         self.file_selector_bt.pack(side=RIGHT)
+
+        def close():
+            self.root.destroy()
         
         ## function that collect name and file location and 
         ## stores the date in the db
@@ -71,19 +78,29 @@ class add_project_gui:
                 temp_project_name = self.proj_name_ent.get()
                 ## read the contents from proj_file_loc_ent
                 temp_project_loc = self.proj_file_loc_ent.get()
+
+                ## get the file name from the project location 
+                #temp_file_name = Path(temp_project_loc).stem
+                temp_file_name = os.path.basename(temp_project_loc)
+                #print("the file name is: " + temp_file_name)
                 
                 ## convert the project file to binary
                 projectBinaryFiles = convertToBinaryData(temp_project_loc)
                 
                 ## write both into the database
                 c.execute(
-                    '''INSERT INTO projects (proj_name, proj_files) VALUES (?, ?) ''',  
-                    (temp_project_name, projectBinaryFiles)
+                    '''INSERT INTO projects (proj_name, file_name, proj_files) VALUES (?,?,?) ''',  
+                    (temp_project_name, temp_file_name, projectBinaryFiles)
                 )
                 
                 conn.commit()
+                ## alert the user that the project has been addede 
+                messagebox.showinfo(title="Project Status", message="Project added")
+                # the project is created now, so close the window 
+                close();
                 
-                ## show the db
+                
+                ## show the db (needed?)
                 statement = '''SELECT * FROM projects'''
                 c.execute(statement)
                 
