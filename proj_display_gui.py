@@ -55,11 +55,15 @@ def get_files(prj_name):
 
     ## should put this in a try statement, and if worked, display a confirmation message 
     ## need to convert the files from binary
+    
+    dlBaseLocation = filedialog.askopenfilename(initialdir = "~/Downloads/",
+                                                title="select a location",
+                                                filetypes=("*.*"))
     try:
         ## get the location the user wants to place the download
-        #dlBaseLocation = FileDialog.askopenfilename(initialdir = "~/Downloads/",
-        #                                            title="select a location",
-        #                                            fieltypes=("*.*"))
+       # dlBaseLocation = askopenfilename(initialdir = "~/Downloads/",
+       #                                             title="select a location",
+       #                                             fieltypes=("*.*"))
 
         convertToDigitalData(output, testFileName)
         ## show a message that says the it worked  

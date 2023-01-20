@@ -6,11 +6,12 @@ from add_proj_gui import *
 from proj_display_gui import *
 import math
 from functools import partial
+from os.path import exists
 
-
+db_file='stl_manager.db'
 
 def make_db():
-    conn = sqlite3.connect('stl_manager.db')
+    conn = sqlite3.connect(db_file)
 
     c = conn.cursor()
 
@@ -24,10 +25,6 @@ def make_db():
     conn.close()
 
 
-#def refresh(self.elementFrame):
-#    self.elementFrame.destroy()
-#    self.elementFrame.__init__()
-
 
 ## function to open the "add new project" window
 #def add_function():
@@ -38,7 +35,7 @@ def show_display(project):
 
 ## function to perform database a show all query in the database
 def show_all_query():
-    conn = sqlite3.connect('stl_manager.db')
+    conn = sqlite3.connect(db_file)
 
     ## create cursor
     c = conn.cursor()
@@ -113,8 +110,6 @@ def viewResultsGenerator(projectList, elementFrame):
         buttonNameList.append(tempBtnName)
         i += 1
 
-
-
     ## loop through the project list and make a frame for each
     ## with a botton and a label for each project
     listPlace = 0
@@ -171,22 +166,73 @@ def viewResultsGenerator(projectList, elementFrame):
 class MyGUI:
     def __init__(self):
         #make_db()
+
+        ## need a check to see if the db is made.  if
+        ## not, then make it. 
+        if not(exists(db_file)):
+            make_db()
+ 
+
+
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
 
         ## function to open the "add new project" window
         def add_function():
-            #add_project_gui(self)
-            add_project_gui()
+            add_project_gui(self)
+            #add_project_gui()
+
+        ## a function that will handle the building of the subViewFrame.  This is
+        ## needed because these steps will have to be performed repeatedly for 
+        ## refresh capability. 
+        def buildSubViewFrame():
+
+            ## while mainViewFrame holds the entire right side of the program, 
+            ## subViewframe is a container that will keep the the results element frame 
+            ## and the scrollbar together  
+            self.subViewFrame = Frame(self.mainViewFrame)
+            ## must pack subViewFrame later
+
+            ## make a canvas (needed to support scrollable frames
+            self.canvas = Canvas(self.subViewFrame)
+
+            ## making the scrollbar
+                ### note: scrollable frame are a HUGE PAIN! 
+                ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
+            self.sb = Scrollbar(self.subViewFrame, orient=VERTICAL, command=self.canvas.yview)
+            #self.sb.pack(side=RIGHT, fill=Y)
+
+            ## make a frame that will only hold the results elements
+            self.elementFrame = Frame(self.canvas)
+            ### DONT PACK THE ELEMENTFRAME!!! Its handled by the canvas window
+
+            self.elementFrame.bind(
+                "<Configure>",
+                lambda e: self.canvas.configure(
+                    scrollregion=self.canvas.bbox("all")
+                )
+            )
+
+            self.canvas.create_window((0,0), window=self.elementFrame, anchor='nw')
 
 
-        def refresh_elements():
-            self.elementFrame.destroy()
-            self.elementFrame.__init__()
+            # configure the canvas to make scrolling function
+            self.canvas.configure(yscrollcommand=self.sb.set)
+            self.canvas.pack(fill=BOTH, expand=1)
 
-        #def refresh_root():
-        #    refresh(self)
+            ## will have to loop through a list to get the contents of the lables 
+            viewResultsGenerator(show_all_query(), self.elementFrame)
+
+            ## pack everything
+            self.subViewFrame.pack(fill=BOTH, expand=1)
+            self.canvas.pack(fill=BOTH, expand=1)
+            self.sb.pack(side='right', fill="y", expand=0)
+
+
+        def refreshElements():
+            self.subViewFrame.destroy()
+            buildSubViewFrame()
 
         ## show whats in the db (not needed, for testing only 
         #show_all_query()
@@ -202,7 +248,7 @@ class MyGUI:
         ## defining the search field and button
         self.searchEntry = Entry(self.searchFrame)
         ## ATTENTION:  Using this button for testing at the moment 
-        self.searchBt = Button(self.searchFrame, text="search", command=refresh_elements)
+        self.searchBt = Button(self.searchFrame, text="search", command=refreshElements)
 
         ## packing the search field and button
         self.searchEntry.pack(side=LEFT, padx=10)
@@ -224,22 +270,46 @@ class MyGUI:
         ### note: scrollable frame are a HUGE PAIN! 
         ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
 
+        ## call a function that will handle the building of the subViewFrame.  
+        buildSubViewFrame()
+
+        self.root.mainloop()
+
+
+    def refresh(self):
+        #self.refreshElements()
+        self.subViewFrame.destroy()
+        self.externalBuildSubViewFrame()
+
+
+
+
+
+
+
+    ## a function that will handle the building of the subViewFrame.  This is
+    ## needed because these steps will have to be performed repeatedly for 
+    ## refresh capability. 
+    def externalBuildSubViewFrame(self):
+
         ## while mainViewFrame holds the entire right side of the program, 
         ## subViewframe is a container that will keep the the results element frame 
-        ## and the scrollbar together  
+            ## and the scrollbar together  
         self.subViewFrame = Frame(self.mainViewFrame)
-        ## must pack subViewFrame later
+            ## must pack subViewFrame later
 
-        ## make a canvas (needed to support scrollable frames
+            ## make a canvas (needed to support scrollable frame
         self.canvas = Canvas(self.subViewFrame)
 
-        ## making the scrollbar
+            ## making the scrollbar
+                ### note: scrollable frame are a HUGE PAIN! 
+                ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
         self.sb = Scrollbar(self.subViewFrame, orient=VERTICAL, command=self.canvas.yview)
-        #self.sb.pack(side=RIGHT, fill=Y)
+            #self.sb.pack(side=RIGHT, fill=Y)
 
-        ## make a frame that will only hold the results elements
+            ## make a frame that will only hold the results elements
         self.elementFrame = Frame(self.canvas)
-        ### DONT PACK THE ELEMENTFRAME!!! Its handled by the canvas window
+            ### DONT PACK THE ELEMENTFRAME!!! Its handled by the canvas window
 
         self.elementFrame.bind(
             "<Configure>",
@@ -251,21 +321,23 @@ class MyGUI:
         self.canvas.create_window((0,0), window=self.elementFrame, anchor='nw')
 
 
-        # configure the canvas to make scrolling function
+            # configure the canvas to make scrolling function
         self.canvas.configure(yscrollcommand=self.sb.set)
         self.canvas.pack(fill=BOTH, expand=1)
 
-        ## will have to loop through a list to get the contents of the lables 
+            ## will have to loop through a list to get the contents of the lables 
         viewResultsGenerator(show_all_query(), self.elementFrame)
 
-        ## pack everything
+            ## pack everything
         self.subViewFrame.pack(fill=BOTH, expand=1)
         self.canvas.pack(fill=BOTH, expand=1)
         self.sb.pack(side='right', fill="y", expand=0)
-        ## again, do not pack elementFrame
-        
 
-        self.root.mainloop()
-        
+
+
+
+
+
+
 ## call the program
 MyGUI()

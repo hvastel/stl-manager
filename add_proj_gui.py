@@ -16,13 +16,9 @@ def convertToBinaryData(filename):
     return blobData
 
 
-#def refresh_main(MyGui):
-#    MyGui.refresh_root()
-
-
 class add_project_gui:
-    #def __init__(self, MyGui):
-    def __init__(self):
+    def __init__(self, MyGui):
+    #def __init__(self):
         self.root = Tk()
         self.root.title('Add Project')
         self.root.geometry('650x300')
@@ -96,6 +92,8 @@ class add_project_gui:
                 conn.commit()
                 ## alert the user that the project has been addede 
                 messagebox.showinfo(title="Project Status", message="Project added")
+
+
                 # the project is created now, so close the window 
                 close();
                 
@@ -106,7 +104,9 @@ class add_project_gui:
                 
                 c.close()
                 ## redraw the results
-                #refresh_main(MyGui)
+                #MyGui.refreshElements();
+                MyGui.refresh()
+                #refreshElements(MyGui)
                 
             except sqlite3.Error as error: 
                 print("Failed to insert data into sqlite table", error)
