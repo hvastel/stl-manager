@@ -6,11 +6,12 @@ from add_proj_gui import *
 from proj_display_gui import *
 import math
 from functools import partial
+from os.path import exists
 
-
+db_file='stl_manager.db'
 
 def make_db():
-    conn = sqlite3.connect('stl_manager.db')
+    conn = sqlite3.connect(db_file)
 
     c = conn.cursor()
 
@@ -24,28 +25,38 @@ def make_db():
     conn.close()
 
 
-#def refresh(self.elementFrame):
-#    self.elementFrame.destroy()
-#    self.elementFrame.__init__()
-
-
-## function to open the "add new project" window
-#def add_function():
-#    add_project_gui(self.root)
-
 def show_display(project):
     project_display_gui(project)
 
+
 ## function to perform database a show all query in the database
-def show_all_query():
-    conn = sqlite3.connect('stl_manager.db')
+def show_all_query(userRequest):
+    #print("Show_all_query recieved: " + userRequest)
+
+    # declare the statement variable and set if for of there
+    # is no search criteria
+    statement = '''SELECT proj_name FROM projects'''
+
+    intFlag = 0
+    # if there is actually something to search, then prep the string and do the query
+    if(userRequest != ""):
+        intFlag += 1
+        formattedUserRequest = "%" + userRequest + "%"
+        statement = '''SELECT proj_name FROM projects WHERE proj_name LIKE ?''' 
+        #print("NOTE: went into the if...")
+        #print(formattedUserRequest)
+
+    conn = sqlite3.connect(db_file)
 
     ## create cursor
     c = conn.cursor()
 
     ## show the db
-    statement = '''SELECT proj_name FROM projects'''
-    c.execute(statement)
+    #statement = '''SELECT proj_name FROM projects'''
+    if (intFlag == 0):
+        c.execute(statement)
+    else:
+        c.execute(statement , (formattedUserRequest,))
 
 
     # then take all records and put them in a list
@@ -55,12 +66,10 @@ def show_all_query():
     # in string form
     projectList = []
 
-
     # sadly, the elements in the query are surrounded by gargage.  Until 
     # a better way is found, I have to take several passes at the 
     # string, shaving away the un-needed chars. 
     for row in output:
-    #projectList.append(*row, sep="\n")
         tempString = str(row)
         ## need to remove the first, 2nd to last, and last char
         tempString = tempString[:len(tempString)-1]
@@ -73,8 +82,6 @@ def show_all_query():
         ## once cleaned, we put the string in the projectList
         projectList.append(tempString)
 
-
-    #print(projectList)
     return(projectList)
     
     ### just test code to see the db working
@@ -88,8 +95,8 @@ def show_all_query():
 
     ## close the database
     conn.close()
-
 ##----- end show_all_query()------
+
 
 ## function to build out the results view (on the right side of 
 ## the program). This will build based on the search query 
@@ -112,8 +119,6 @@ def viewResultsGenerator(projectList, elementFrame):
         tempBtnName = "button_" + str(i)
         buttonNameList.append(tempBtnName)
         i += 1
-
-
 
     ## loop through the project list and make a frame for each
     ## with a botton and a label for each project
@@ -170,26 +175,21 @@ def viewResultsGenerator(projectList, elementFrame):
             
 class MyGUI:
     def __init__(self):
-        #make_db()
+        ## need a check to see if the db is made.  if
+        ## not, then make it. 
+        if not(exists(db_file)):
+            make_db()
+
+
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
 
         ## function to open the "add new project" window
         def add_function():
-            #add_project_gui(self)
-            add_project_gui()
+            add_project_gui(self)
+            #add_project_gui()
 
-
-        def refresh_elements():
-            self.elementFrame.destroy()
-            self.elementFrame.__init__()
-
-        #def refresh_root():
-        #    refresh(self)
-
-        ## show whats in the db (not needed, for testing only 
-        #show_all_query()
 
         ## defining the area on the left of the program that will hold
         ## the search feature
@@ -201,8 +201,7 @@ class MyGUI:
         self.searchFrame.pack()
         ## defining the search field and button
         self.searchEntry = Entry(self.searchFrame)
-        ## ATTENTION:  Using this button for testing at the moment 
-        self.searchBt = Button(self.searchFrame, text="search", command=refresh_elements)
+        self.searchBt = Button(self.searchFrame, text="search", command=self.refresh)
 
         ## packing the search field and button
         self.searchEntry.pack(side=LEFT, padx=10)
@@ -211,7 +210,6 @@ class MyGUI:
         ## defining and packing the "New Project" button
         self.newProjectBt = Button(self.mainSearchFrame, text=" Add Project", command=add_function)
         self.newProjectBt.pack()
-
 
         #### ----- Now building the right side ---------
         
@@ -224,18 +222,42 @@ class MyGUI:
         ### note: scrollable frame are a HUGE PAIN! 
         ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
 
+        ## call a function that will handle the building of the subViewFrame.  
+        self.buildSubViewFrame()
+
+        self.root.mainloop()
+
+
+    def getSearch(self):
+        ## get the text from the search field 
+        sometext = self.searchEntry.get()
+        #print("the user search for:  " + sometext)
+        return sometext
+
+    def refresh(self):
+        #self.refreshElements()
+        self.subViewFrame.destroy()
+        self.buildSubViewFrame()
+
+
+    ## a function that will handle the building of the subViewFrame.  This is
+    ## needed because these steps will have to be performed repeatedly for 
+    ## refresh capability. 
+    def buildSubViewFrame(self):
+
         ## while mainViewFrame holds the entire right side of the program, 
         ## subViewframe is a container that will keep the the results element frame 
         ## and the scrollbar together  
         self.subViewFrame = Frame(self.mainViewFrame)
         ## must pack subViewFrame later
 
-        ## make a canvas (needed to support scrollable frames
+        ## make a canvas (needed to support scrollable frame
         self.canvas = Canvas(self.subViewFrame)
 
         ## making the scrollbar
+        ### note: scrollable frame are a HUGE PAIN! 
+        ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
         self.sb = Scrollbar(self.subViewFrame, orient=VERTICAL, command=self.canvas.yview)
-        #self.sb.pack(side=RIGHT, fill=Y)
 
         ## make a frame that will only hold the results elements
         self.elementFrame = Frame(self.canvas)
@@ -250,22 +272,23 @@ class MyGUI:
 
         self.canvas.create_window((0,0), window=self.elementFrame, anchor='nw')
 
-
         # configure the canvas to make scrolling function
         self.canvas.configure(yscrollcommand=self.sb.set)
         self.canvas.pack(fill=BOTH, expand=1)
 
+        ## get the contents of the search field 
+        searchCritia = self.getSearch()
+
         ## will have to loop through a list to get the contents of the lables 
-        viewResultsGenerator(show_all_query(), self.elementFrame)
+        viewResultsGenerator(show_all_query(searchCritia), self.elementFrame)
+        #print("buildSubViewFrame send: " + searchCritia)
+        #print(show_all_query(searchCritia))
 
         ## pack everything
         self.subViewFrame.pack(fill=BOTH, expand=1)
         self.canvas.pack(fill=BOTH, expand=1)
         self.sb.pack(side='right', fill="y", expand=0)
-        ## again, do not pack elementFrame
-        
 
-        self.root.mainloop()
-        
+
 ## call the program
 MyGUI()
