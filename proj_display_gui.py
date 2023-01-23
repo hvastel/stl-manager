@@ -55,24 +55,19 @@ def get_files(prj_name):
 
     ## should put this in a try statement, and if worked, display a confirmation message 
     ## need to convert the files from binary
-    
-    dlBaseLocation = filedialog.askopenfilename(initialdir = "~/Downloads/",
-                                                title="select a location",
-                                                filetypes=("*.*"))
     try:
         ## get the location the user wants to place the download
-       # dlBaseLocation = askopenfilename(initialdir = "~/Downloads/",
-       #                                             title="select a location",
-       #                                             fieltypes=("*.*"))
+        dlBaseLocation = filedialog.askdirectory(initialdir = "~/Downloads/")
+        ## combine the download directory with the filename to make the full path name
+        tempFullDlPath = dlBaseLocation + "/" + testFileName
 
-        convertToDigitalData(output, testFileName)
+        ## do the download
+        convertToDigitalData(output, tempFullDlPath)
         ## show a message that says the it worked  
         messagebox.showinfo(title="Download Status", message="Download Successful")
     except:
         print("Sorry, download didn't work.")
         messagebox.showinfo(title="Download Status", message="Unable to download")
-
-
 
     ## open up a file explorer to let the user pick the location
     ## (provide the project name to the explorer)
@@ -110,7 +105,7 @@ class project_display_gui:
         self.root.geometry('500x500')
 
 
-        print("Project name is " + prj_name)
+        #print("Project name is " + prj_name)
         ## in order to get the needed info, the project name is need. 
         ## will have to run some querys from the db to get the rest. 
                 
