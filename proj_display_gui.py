@@ -16,6 +16,10 @@ from tkinter import filedialog
     # set_files (7) 
     # set_project_name (8)
     # delete_entry (2)
+    
+#def delete_entry():
+    # code to delete entry
+#    print("imagine that the record is deleted....")
 
 
 # Convert binary to digital data format
@@ -97,11 +101,14 @@ def get_file_name(prj_name):
 
 
 class project_display_gui:
-    #global stl_img
 
-    def __init__(self, prj_name):
+    def __init__(self, mainGui, prj_name):
 
-        self.root = Tk()
+        self.project_name = prj_name
+        self.MyGui = mainGui
+
+        ## explaination for Toplevel: https://stackoverflow.com/questions/20251161/tkinter-tclerror-image-pyimage3-doesnt-exist
+        self.root = Toplevel()
         self.root.geometry('500x500')
 
 
@@ -110,10 +117,13 @@ class project_display_gui:
         ## will have to run some querys from the db to get the rest. 
                 
         ## display the stl image
-        #stl_img = PhotoImage(file="./images/stan-medium.png")
-        #self.a_label = Label(self.root, image=stl_img, command=None)
-        #self.a_label.image = stl_img  ## keep a reference :<
-        #self.a_label.pack(padx=10, pady=10)
+        self.stl_img = PhotoImage(file="./images/stan-medium.png")
+        ## making the lable into a button, so that the user can edit the 
+        ## image of the project file 
+        self.project_image_bt = Button(self.root, image=self.stl_img, 
+                command=self.change_project_image)
+        
+        self.project_image_bt.pack(padx=10, pady=10)
 
         self.nameLb = Label(self.root, text="Project Name: " + prj_name, font=("None", 15))
         self.nameLb.pack(padx=10, pady=10)
@@ -130,13 +140,77 @@ class project_display_gui:
 
 
         ## need a delete button
-        #self.deleteBt = Button(self.root, text="Delete Project", fg='red')
-        #self.deleteBt.pack(padx=10, pady=10)
+        ## work in progress 
+        self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
+        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=None)
+        self.deleteBt.pack(padx=10, pady=10)
 
-        ## make a frame to store the stl data
+        ## make a frame to store the stl data (old)
 
-        ## label for stl name 
-        ## lable for tags
+        ## label for stl name (old)
+        ## lable for tags (old)
         self.root.mainloop()
 
-#project_display_gui()
+
+    def change_project_image(self):
+        print("change project image was pressed")
+        
+        ## bring up a file explorer to let the user choose the new project image
+
+        # take the file location and put it in the db
+
+        # refresh the frame (will need to write a refresh funciton              (do this last) 
+        ##      (also need to change the database to have a spot for the image (Do THIS FIRST)
+        ##      (ALSO need to change the build logic for this frame 
+        ##          such that it checks the db and tries to load 
+        ##          the image from the db first, and there isnt one, 
+        ##          use old stans pic as default.                               (do this second) 
+
+    def delete_entry(self):
+        # open the db
+        conn = sqlite3.connect('stl_manager.db')
+        c = conn.cursor()
+
+
+        ## need to get the project id #
+        ## get the project id # 
+        statement = ''' SELECT proj_id FROM projects 
+                            WHERE proj_name = (?)
+        '''
+        c.execute(statement, (self.project_name,))
+        output = c.fetchone()[0]
+
+        #print(output)
+
+
+        # in a try
+        try: 
+            # do the remove 
+            statement = 'DELETE FROM projects WHERE proj_id=? '
+            c.execute(statement, (output,))
+            conn.commit()
+            #close the db
+            c.close()
+
+            # give the user confirmation
+            messagebox.showinfo(title="Project Deleted", message="Project has been removed")
+
+            # refresh the element display
+            self.MyGui.refresh() ## need to import the main gui
+
+            
+            # destroy the frame 
+            self.close()
+
+        # else 
+        except:
+            # alert the user that it didnt work
+            messagebox.showinfo(title="Error", message="Error, Project has not been removed")
+
+        #close the db
+        c.close()
+
+
+    def close(self):
+        self.root.destroy()
+

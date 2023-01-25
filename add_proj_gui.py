@@ -98,15 +98,16 @@ class add_project_gui:
                 close();
                 
                 
-                ## show the db (needed?)
-                statement = '''SELECT * FROM projects'''
-                c.execute(statement)
+                ## troubleshooting
+                #statement = '''SELECT proj_id, proj_name  FROM projects'''
+                #showOutput = c.execute(statement)
+                #print(showOutput)
+                #for row in showOutput:
+                #    print(row)
                 
                 c.close()
                 ## redraw the results
-                #MyGui.refreshElements();
                 MyGui.refresh()
-                #refreshElements(MyGui)
                 
             except sqlite3.Error as error: 
                 print("Failed to insert data into sqlite table", error)
