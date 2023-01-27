@@ -4,6 +4,7 @@ import sqlite3
 from functools import partial
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter.filedialog import askopenfilename
 
 
 
@@ -17,9 +18,6 @@ from tkinter import filedialog
     # set_project_name (8)
     # delete_entry (2)
     
-#def delete_entry():
-    # code to delete entry
-#    print("imagine that the record is deleted....")
 
 
 # Convert binary to digital data format
@@ -109,7 +107,7 @@ class project_display_gui:
 
         ## explaination for Toplevel: https://stackoverflow.com/questions/20251161/tkinter-tclerror-image-pyimage3-doesnt-exist
         self.root = Toplevel()
-        self.root.geometry('500x500')
+        self.root.geometry('550x650')
 
 
         #print("Project name is " + prj_name)
@@ -117,11 +115,41 @@ class project_display_gui:
         ## will have to run some querys from the db to get the rest. 
                 
         ## display the stl image
-        self.stl_img = PhotoImage(file="./images/stan-medium.png")
+        #self.stl_img = PhotoImage(file="./images/stan-medium.png")
+
+
+        ## get the project id 
+        self.project_id = self.get_project_id()
+        #print("project id is: " + str(project_id))
+        
+
+
+
+        # get the project image out of the database
+        tempImageBinary = self.get_db_image(self.project_id)
+
+        #convert the image back to digital and set as local image
+        tempImage = PhotoImage(convertToDigitalData(tempImageBinary, "tempImage"))
+        #self.stl_img = PhotoImage(file="./tempImage")
+        # in order to re-size the photoimage, we need to make it an Image first
+        stl_img = Image.open("./tempImage")
+        # now resize it 
+        resized_stl_img = stl_img.resize((250, 350))
+        ## now we have to use "ImageTk.PhotoImage, because the regular 
+        ## PhotoImage only support png, and we want jpgs to work too
+        self.photo_img = ImageTk.PhotoImage(resized_stl_img)
+
+        ## Note!!!!!  need to clean up the "tempImage" file!!!!!
+
         ## making the lable into a button, so that the user can edit the 
         ## image of the project file 
-        self.project_image_bt = Button(self.root, image=self.stl_img, 
+        self.project_image_bt = Button(self.root, image=self.photo_img, 
                 command=self.change_project_image)
+
+
+
+
+
         
         self.project_image_bt.pack(padx=10, pady=10)
 
@@ -140,31 +168,109 @@ class project_display_gui:
 
 
         ## need a delete button
-        ## work in progress 
         self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
-        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=None)
         self.deleteBt.pack(padx=10, pady=10)
 
-        ## make a frame to store the stl data (old)
-
-        ## label for stl name (old)
-        ## lable for tags (old)
         self.root.mainloop()
 
 
+    # Convert digital data to binary format
+    def convertToBinaryData(self,filename):
+        with open(filename, 'rb') as file:
+            blobData = file.read()
+        return blobData
+
+
+    def get_db_image(self,project_id):
+        # open db
+        conn = sqlite3.connect('stl_manager.db')
+        c = conn.cursor()
+
+        # make statement 
+        statement = ''' SELECT proj_image FROM projects 
+                            WHERE proj_id = (?)
+        '''
+        # excecute
+        c.execute(statement, (project_id,))
+        output = c.fetchone()[0]
+
+        # close db
+        c.close()
+        #print(output)
+        return output
+
+        # return image
+
+
+
+    def set_db_image(self,image_location):
+        # open db
+        conn = sqlite3.connect('stl_manager.db')
+        c = conn.cursor()
+
+        ## first convert the file to a photoimage
+        #test_img = PhotoImage(file="./images/stan-medium.png")
+        #project_img = PhotoImage(image_location)
+
+        # convert photoimage to binary
+        image_blob = self.convertToBinaryData(image_location)
+        #image_blob = self.convertToBinaryData(project_img)
+        
+
+        # make statement 
+        statement = 'UPDATE projects SET proj_image = (?) WHERE proj_id = (?)'
+        c.execute(statement, (image_blob,self.project_id,))
+
+        conn.commit()
+        
+
+        # close db
+        c.close()
+
+
+    def open_file_chooser(self):
+        filename = askopenfilename()
+        return filename
+
     def change_project_image(self):
-        print("change project image was pressed")
+        #print("change project image was pressed")
         
         ## bring up a file explorer to let the user choose the new project image
+        image_location = askopenfilename()
+        print("photo location: " + image_location)
 
+        # here for troubleshooting
+        self.set_db_image(image_location)
         # take the file location and put it in the db
+        #self.set_db_image(image_location)
+        #self.refresh()
+        try:
+            self.set_db_image(image_location)
+            self.refresh()
 
-        # refresh the frame (will need to write a refresh funciton              (do this last) 
-        ##      (also need to change the database to have a spot for the image (Do THIS FIRST)
-        ##      (ALSO need to change the build logic for this frame 
-        ##          such that it checks the db and tries to load 
-        ##          the image from the db first, and there isnt one, 
-        ##          use old stans pic as default.                               (do this second) 
+        except:
+            print("Error: Unable to change project image.")
+            
+
+
+    def get_project_id(self):
+        # open the db
+        conn = sqlite3.connect('stl_manager.db')
+        c = conn.cursor()
+
+
+        ## need to get the project id #
+        ## get the project id # 
+        statement = ''' SELECT proj_id FROM projects 
+                            WHERE proj_name = (?)
+        '''
+        c.execute(statement, (self.project_name,))
+        output = c.fetchone()[0]
+
+        c.close()
+        return output
+
+
 
     def delete_entry(self):
         # open the db
@@ -181,7 +287,6 @@ class project_display_gui:
         output = c.fetchone()[0]
 
         #print(output)
-
 
         # in a try
         try: 
@@ -209,6 +314,11 @@ class project_display_gui:
 
         #close the db
         c.close()
+
+    def refresh(self):
+        self.root.destroy()
+        self.__init__(self.MyGui, self.project_name)
+
 
 
     def close(self):

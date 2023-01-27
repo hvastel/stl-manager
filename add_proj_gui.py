@@ -6,8 +6,6 @@ from pathlib import Path
 import os
 from tkinter import messagebox
 
-#from main_gui import *
-
 
 # Convert digital data to binary format
 def convertToBinaryData(filename):
@@ -82,11 +80,18 @@ class add_project_gui:
                 
                 ## convert the project file to binary
                 projectBinaryFiles = convertToBinaryData(temp_project_loc)
+
+                ### ---- small change, adding image as default 
+                projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
                 
                 ## write both into the database
+                #c.execute(
+                #    '''INSERT INTO projects (proj_name, file_name, proj_files) VALUES (?,?,?) ''',  
+                #    (temp_project_name, temp_file_name, projectBinaryFiles)
+                #)
                 c.execute(
-                    '''INSERT INTO projects (proj_name, file_name, proj_files) VALUES (?,?,?) ''',  
-                    (temp_project_name, temp_file_name, projectBinaryFiles)
+                    '''INSERT INTO projects (proj_name, file_name, proj_files, proj_image) VALUES (?,?,?,?) ''',  
+                    (temp_project_name, temp_file_name, projectBinaryFiles, projectImageBinary)
                 )
                 
                 conn.commit()
