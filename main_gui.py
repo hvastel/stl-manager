@@ -185,6 +185,7 @@ class MyGUI:
         ### note: scrollable frame are a HUGE PAIN! 
         ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
         self.sb = Scrollbar(self.subViewFrame, orient=VERTICAL, command=self.canvas.yview)
+        self.sb.pack(side='right', fill="y", expand=0)
 
         ## make a frame that will only hold the results elements
         self.elementFrame = Frame(self.canvas)
@@ -214,7 +215,6 @@ class MyGUI:
         ## pack everything
         self.subViewFrame.pack(fill=BOTH, expand=1)
         self.canvas.pack(fill=BOTH, expand=1)
-        self.sb.pack(side='right', fill="y", expand=0)
 
 
 
@@ -275,8 +275,24 @@ class MyGUI:
             ## iterate the list position
             listPlace += 1;
             
-            ## label
-            Label(tempFrame, text=project).pack()
+
+            ## labels
+            # if the length of the project is longer then 26 chars
+            if(len(project) > 26):
+                # make a variable to hold a shorten version of it
+                # take the project name and cut it to 23 chars
+                # append "..." at the end 
+                sortenedProjectName = project[0:23] + '...'
+                # pack the appended variable
+                Label(tempFrame, text=sortenedProjectName).pack()
+            else:
+                # just pack the project label
+                Label(tempFrame, text=project).pack()
+
+
+
+            ### label
+            #Label(tempFrame, text=project).pack()
         
             ## put the built frame in the list
             frameList.append(tempFrame)
@@ -347,6 +363,8 @@ class MyGUI:
         temp_image = Image.open("tempImage")
         resized_img = temp_image.resize((200, 300))
         resized_photo_img = ImageTk.PhotoImage(resized_img)
+        # delete the tempImage file
+        os.remove("tempImage")
         return resized_photo_img
 
 

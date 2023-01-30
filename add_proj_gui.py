@@ -74,45 +74,49 @@ class add_project_gui:
                 temp_project_loc = self.proj_file_loc_ent.get()
 
                 ## get the file name from the project location 
-                #temp_file_name = Path(temp_project_loc).stem
                 temp_file_name = os.path.basename(temp_project_loc)
-                #print("the file name is: " + temp_file_name)
                 
-                ## convert the project file to binary
-                projectBinaryFiles = convertToBinaryData(temp_project_loc)
+                ## need error correction, to make sure all info is provided 
+                if(temp_project_name == ""):
+                    messagebox.showerror(title="Error", message="Need project name")
+                elif( temp_project_loc == ""):
+                    messagebox.showerror(title="Error", message="Need project file location")
+                else:
+                    # extract the actual file name from the file address
+                    temp_file_name = os.path.basename(temp_project_loc)
 
-                ### ---- small change, adding image as default 
-                projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
+                    ## convert the project file to binary
+                    projectBinaryFiles = convertToBinaryData(temp_project_loc)
+
+                    ### ---- small change, adding image as default 
+                    #projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
+                    projectImageBinary = convertToBinaryData("images/stan-medium.png")
                 
-                ## write both into the database
-                #c.execute(
-                #    '''INSERT INTO projects (proj_name, file_name, proj_files) VALUES (?,?,?) ''',  
-                #    (temp_project_name, temp_file_name, projectBinaryFiles)
-                #)
-                c.execute(
-                    '''INSERT INTO projects (proj_name, file_name, proj_files, proj_image) VALUES (?,?,?,?) ''',  
-                    (temp_project_name, temp_file_name, projectBinaryFiles, projectImageBinary)
-                )
+                    ## write collected info into the database
+                    c.execute(
+                        '''INSERT INTO projects (proj_name, file_name, proj_files, proj_image) VALUES (?,?,?,?) ''',  
+                        (temp_project_name, temp_file_name, projectBinaryFiles, projectImageBinary)
+                    )
                 
-                conn.commit()
-                ## alert the user that the project has been addede 
-                messagebox.showinfo(title="Project Status", message="Project added")
+                    conn.commit()
+                    ## alert the user that the project has been addede 
+                    messagebox.showinfo(title="Project Status", message="Project added")
 
 
-                # the project is created now, so close the window 
-                close();
+                    # the project is created now, so close the window 
+                    close();
                 
                 
-                ## troubleshooting
-                #statement = '''SELECT proj_id, proj_name  FROM projects'''
-                #showOutput = c.execute(statement)
-                #print(showOutput)
-                #for row in showOutput:
-                #    print(row)
+                    ## troubleshooting
+                    #statement = '''SELECT proj_id, proj_name  FROM projects'''
+                    #showOutput = c.execute(statement)
+                    #print(showOutput)
+                    #for row in showOutput:
+                    #    print(row)
                 
-                c.close()
-                ## redraw the results
-                MyGui.refresh()
+                    c.close()
+                    ## redraw the results
+                    MyGui.refresh()
                 
             except sqlite3.Error as error: 
                 print("Failed to insert data into sqlite table", error)
