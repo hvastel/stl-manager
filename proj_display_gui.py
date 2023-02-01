@@ -7,6 +7,7 @@ from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 
 
+db_file='stl_manager.db'
 
 ## needed functions (number = priority)
     # get_tags (4)
@@ -39,7 +40,8 @@ def open_file_chooser():
 def get_files(prj_name):
     
     ## connect to the db
-    conn = sqlite3.connect('stl_manager.db')
+    #conn = sqlite3.connect('stl_manager.db')
+    conn = sqlite3.connect(db_file)
 
     ## make a cursor
     c = conn.cursor()
@@ -81,7 +83,8 @@ def get_files(prj_name):
 def get_file_name(prj_name):
     
     ## connect to the db
-    conn = sqlite3.connect('stl_manager.db')
+    #conn = sqlite3.connect('stl_manager.db')
+    conn = sqlite3.connect(db_file)
     ## make a cursor
     c = conn.cursor()
 
@@ -109,26 +112,15 @@ class project_display_gui:
         self.root = Toplevel()
         self.root.geometry('550x650')
 
-
-        #print("Project name is " + prj_name)
-        ## in order to get the needed info, the project name is need. 
-        ## will have to run some querys from the db to get the rest. 
-                
-        ## display the stl image
-        #self.stl_img = PhotoImage(file="./images/stan-medium.png")
-
-
         ## get the project id 
         self.project_id = self.get_project_id()
-        #print("project id is: " + str(project_id))
-        
 
         # get the project image out of the database
         tempImageBinary = self.get_db_image(self.project_id)
 
         #convert the image back to digital and set as local image
         tempImage = PhotoImage(convertToDigitalData(tempImageBinary, "tempImage"))
-        #self.stl_img = PhotoImage(file="./tempImage")
+        
         # in order to re-size the photoimage, we need to make it an Image first
         stl_img = Image.open("./tempImage")
         # now resize it 
@@ -137,13 +129,10 @@ class project_display_gui:
         ## PhotoImage only support png, and we want jpgs to work too
         self.photo_img = ImageTk.PhotoImage(resized_stl_img)
 
-        ## Note!!!!!  need to clean up the "tempImage" file!!!!!
-
         ## making the lable into a button, so that the user can edit the 
         ## image of the project file 
         self.project_image_bt = Button(self.root, image=self.photo_img, 
                 command=self.change_project_image)
-
         
         self.project_image_bt.pack(padx=10, pady=10)
 
@@ -177,7 +166,8 @@ class project_display_gui:
 
     def get_db_image(self,project_id):
         # open db
-        conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect('stl_manager.db')
+        conn = sqlite3.connect(db_file)
         c = conn.cursor()
 
         # make statement 
@@ -199,7 +189,8 @@ class project_display_gui:
 
     def set_db_image(self,image_location):
         # open db
-        conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect('stl_manager.db')
+        conn = sqlite3.connect(db_file)
         c = conn.cursor()
 
         ## first convert the file to a photoimage
@@ -207,8 +198,10 @@ class project_display_gui:
         #project_img = PhotoImage(image_location)
 
         # convert photoimage to binary
-        image_blob = self.convertToBinaryData(image_location)
-        #image_blob = self.convertToBinaryData(project_img)
+        try:
+            image_blob = self.convertToBinaryData(image_location)
+        except:
+            pass
         
 
         # make statement 
@@ -227,29 +220,32 @@ class project_display_gui:
         return filename
 
     def change_project_image(self):
-        #print("change project image was pressed")
         
         ## bring up a file explorer to let the user choose the new project image
+         
         image_location = askopenfilename()
-        print("photo location: " + image_location)
+        #print("photo location: " + image_location)
 
-        # here for troubleshooting
-        self.set_db_image(image_location)
-        # take the file location and put it in the db
-        #self.set_db_image(image_location)
-        #self.refresh()
-        try:
-            self.set_db_image(image_location)
-            self.refresh()
+        ## only set image if we receive a good image
+        if(image_location == ''): ## add jpeg or png check
+            pass  ## cancel was selected, nothing to do
+        elif((image_location[-3:] == "jpeg") or (image_location[-3:] == "JPEG") or (image_location[-3:] == "png")
+                or (image_location[-3:] == "PNG") or (image_location[-3:] == "jpg") or (image_location[-3:] == "JPG")): 
+            try:
+                self.set_db_image(image_location)
+                self.refresh()
 
-        except:
-            print("Error: Unable to change project image.")
+            except:
+                print("Error: Unable to change project image.")
+        else: 
+            messagebox.showerror(title="Change Image Error", message="Invalid file type selected")
             
 
 
     def get_project_id(self):
         # open the db
-        conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect('stl_manager.db')
+        conn = sqlite3.connect(db_file)
         c = conn.cursor()
 
 
@@ -268,7 +264,8 @@ class project_display_gui:
 
     def delete_entry(self):
         # open the db
-        conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect('stl_manager.db')
+        conn = sqlite3.connect(db_file)
         c = conn.cursor()
 
 
