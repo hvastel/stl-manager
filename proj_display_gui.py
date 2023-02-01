@@ -123,8 +123,6 @@ class project_display_gui:
         #print("project id is: " + str(project_id))
         
 
-
-
         # get the project image out of the database
         tempImageBinary = self.get_db_image(self.project_id)
 
@@ -145,10 +143,6 @@ class project_display_gui:
         ## image of the project file 
         self.project_image_bt = Button(self.root, image=self.photo_img, 
                 command=self.change_project_image)
-
-
-
-
 
         
         self.project_image_bt.pack(padx=10, pady=10)
