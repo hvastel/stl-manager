@@ -42,8 +42,6 @@ def show_all_query(userRequest):
         intFlag += 1
         formattedUserRequest = "%" + userRequest + "%"
         statement = '''SELECT proj_name FROM projects WHERE proj_name LIKE ?''' 
-        #print("NOTE: went into the if...")
-        #print(formattedUserRequest)
 
     conn = sqlite3.connect(db_file)
 
@@ -112,7 +110,11 @@ class MyGUI:
         ## function to open the "add new project" window
         def add_function():
             add_project_gui(self)
-            #add_project_gui()
+
+
+        ## a callback function, to help bind the searchEntry with the searchBt
+        def enter_callback(event):
+            self.refresh()
 
 
         ## defining the area on the left of the program that will hold
@@ -123,9 +125,13 @@ class MyGUI:
         ## defining a container to hold the search field and button
         self.searchFrame = Frame(self.mainSearchFrame)
         self.searchFrame.pack()
+
         ## defining the search field and button
         self.searchEntry = Entry(self.searchFrame)
         self.searchBt = Button(self.searchFrame, text="search", command=self.refresh)
+
+        ## allowing searches to be done by pressing the enter key
+        self.searchEntry.bind('<Return>', enter_callback)
 
         ## packing the search field and button
         self.searchEntry.pack(side=LEFT, padx=10)
@@ -152,17 +158,14 @@ class MyGUI:
         self.root.mainloop()
 
     def show_display(self,project):
-        #project_display_gui(project)
         project_display_gui(self, project)
 
     def getSearch(self):
         ## get the text from the search field 
         sometext = self.searchEntry.get()
-        #print("the user search for:  " + sometext)
         return sometext
 
     def refresh(self):
-        #self.refreshElements()
         self.subViewFrame.destroy()
         self.buildSubViewFrame()
 
@@ -202,15 +205,12 @@ class MyGUI:
 
         # configure the canvas to make scrolling function
         self.canvas.configure(yscrollcommand=self.sb.set)
-        self.canvas.pack(fill=BOTH, expand=1)
 
         ## get the contents of the search field 
         searchCritia = self.getSearch()
 
         ## will have to loop through a list to get the contents of the lables 
         self.viewResultsGenerator(show_all_query(searchCritia), self.elementFrame)
-        #print("buildSubViewFrame send: " + searchCritia)
-        #print(show_all_query(searchCritia))
 
         ## pack everything
         self.subViewFrame.pack(fill=BOTH, expand=1)
@@ -226,6 +226,11 @@ class MyGUI:
     ## also takes the mainViewFrame, so it can place the built 
     ## pieces into it. 
     def viewResultsGenerator(self, projectList, elementFrame):
+
+        ## sorting the projectList so that the results will appear 
+        ## in alphabetical order
+        projectList.sort()
+        
 
         test_img = PhotoImage(file="./images/stan-medium.png")
         ## make a list (array) to hold the frames that will be built
@@ -289,10 +294,6 @@ class MyGUI:
                 # just pack the project label
                 Label(tempFrame, text=project).pack()
 
-
-
-            ### label
-            #Label(tempFrame, text=project).pack()
         
             ## put the built frame in the list
             frameList.append(tempFrame)

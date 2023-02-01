@@ -6,6 +6,7 @@ from pathlib import Path
 import os
 from tkinter import messagebox
 
+db_file='stl_manager.db'
 
 # Convert digital data to binary format
 def convertToBinaryData(filename):
@@ -16,8 +17,8 @@ def convertToBinaryData(filename):
 
 class add_project_gui:
     def __init__(self, MyGui):
-    #def __init__(self):
-        self.root = Tk()
+        #self.root = Tk()
+        self.root = Toplevel()
         self.root.title('Add Project')
         self.root.geometry('650x300')
 
@@ -63,7 +64,8 @@ class add_project_gui:
         def collectAndStore():
             try:
                 ## create a database
-                conn = sqlite3.connect('stl_manager.db')
+                #conn = sqlite3.connect('stl_manager.db')
+                conn = sqlite3.connect(db_file)
 
                 ## create cursor
                 c = conn.cursor()
@@ -82,30 +84,36 @@ class add_project_gui:
                 elif( temp_project_loc == ""):
                     messagebox.showerror(title="Error", message="Need project file location")
                 else:
-                    # extract the actual file name from the file address
-                    temp_file_name = os.path.basename(temp_project_loc)
+                    if(os.path.exists(temp_project_loc)):
+                        # extract the actual file name from the file address
+                        temp_file_name = os.path.basename(temp_project_loc)
 
-                    ## convert the project file to binary
-                    projectBinaryFiles = convertToBinaryData(temp_project_loc)
+                        ## convert the project file to binary
+                        projectBinaryFiles = convertToBinaryData(temp_project_loc)
 
-                    ### ---- small change, adding image as default 
-                    #projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
-                    projectImageBinary = convertToBinaryData("images/stan-medium.png")
+                        ### ---- small change, adding image as default 
+                        #projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
+                        projectImageBinary = convertToBinaryData("images/stan-medium.png")
                 
-                    ## write collected info into the database
-                    c.execute(
-                        '''INSERT INTO projects (proj_name, file_name, proj_files, proj_image) VALUES (?,?,?,?) ''',  
-                        (temp_project_name, temp_file_name, projectBinaryFiles, projectImageBinary)
-                    )
+                        ## write collected info into the database
+                        c.execute(
+                            '''INSERT INTO projects (proj_name, file_name, proj_files, proj_image) VALUES (?,?,?,?) ''',  
+                            (temp_project_name, temp_file_name, projectBinaryFiles, projectImageBinary)
+                        )
                 
-                    conn.commit()
-                    ## alert the user that the project has been addede 
-                    messagebox.showinfo(title="Project Status", message="Project added")
+                        conn.commit()
+                        ## alert the user that the project has been addede 
+                        messagebox.showinfo(title="Project Status", message="Project added")
+                        
+                        # the project is created now, so close the window 
+                        close();
 
+                        ## redraw the results
+                        MyGui.refresh()
 
-                    # the project is created now, so close the window 
-                    close();
-                
+                    else:
+                        messagebox.showerror(title="Project Add Error", message="Valid file path required")
+
                 
                     ## troubleshooting
                     #statement = '''SELECT proj_id, proj_name  FROM projects'''
@@ -114,9 +122,7 @@ class add_project_gui:
                     #for row in showOutput:
                     #    print(row)
                 
-                    c.close()
-                    ## redraw the results
-                    MyGui.refresh()
+                c.close()
                 
             except sqlite3.Error as error: 
                 print("Failed to insert data into sqlite table", error)
