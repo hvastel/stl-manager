@@ -64,8 +64,8 @@ class add_project_gui:
         def collectAndStore():
             try:
                 ## create a database
-                #conn = sqlite3.connect('stl_manager.db')
-                conn = sqlite3.connect(db_file)
+                conn = sqlite3.connect(MyGui.settings.get_db_location())
+                #print("adding project, using db location: " + MyGui.settings.get_db_location())
 
                 ## create cursor
                 c = conn.cursor()
