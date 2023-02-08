@@ -36,69 +36,6 @@ def open_file_chooser():
     self.proj_file_loc_ent.insert(END,filename)
 
 
-# function for getting (downloading) the files
-def get_files(prj_name):
-    
-    ## connect to the db
-    #conn = sqlite3.connect('stl_manager.db')
-    conn = sqlite3.connect(db_file)
-
-    ## make a cursor
-    c = conn.cursor()
-
-    ## make your query
-    statement = ''' SELECT proj_files FROM projects WHERE proj_name = (?)'''
-    c.execute(statement, (prj_name,))
-
-    # save the output
-    output = c.fetchone()[0]
-
-    #print(output)
-    ## for now, I need a filename 
-    testFileName = get_file_name(prj_name)
-
-    ## should put this in a try statement, and if worked, display a confirmation message 
-    ## need to convert the files from binary
-    try:
-        ## get the location the user wants to place the download
-        dlBaseLocation = filedialog.askdirectory(initialdir = "~/Downloads/")
-        ## combine the download directory with the filename to make the full path name
-        tempFullDlPath = dlBaseLocation + "/" + testFileName
-
-        ## do the download
-        convertToDigitalData(output, tempFullDlPath)
-        ## show a message that says the it worked  
-        messagebox.showinfo(title="Download Status", message="Download Successful")
-    except:
-        print("Sorry, download didn't work.")
-        messagebox.showinfo(title="Download Status", message="Unable to download")
-
-    ## open up a file explorer to let the user pick the location
-    ## (provide the project name to the explorer)
-
-    # close the db
-    conn.close()
-
-
-def get_file_name(prj_name):
-    
-    ## connect to the db
-    #conn = sqlite3.connect('stl_manager.db')
-    conn = sqlite3.connect(db_file)
-    ## make a cursor
-    c = conn.cursor()
-
-    # first get the file names
-    statement = ''' SELECT file_name FROM projects WHERE proj_name = (?)'''
-    c.execute(statement, (prj_name,))
-
-    # save the output
-    output = c.fetchone()[0]
-
-    ## return the file name (the output)
-    return output
-
-    conn.close()
 
 
 class project_display_gui:
@@ -139,14 +76,14 @@ class project_display_gui:
         self.nameLb = Label(self.root, text="Project Name: " + prj_name, font=("None", 15))
         self.nameLb.pack(padx=10, pady=10)
 
-        self.files_name = Label(self.root, text="File: " + get_file_name(prj_name), font=("None", 15))
+        self.files_name = Label(self.root, text="File: " + self.get_file_name(prj_name), font=("None", 15))
         self.files_name.pack(padx=10, pady=10)
 
         #self.tagsLb = Label(self.root, text="Tags:")
         #self.tagsLb.pack(padx=10, pady=10)
 
         self.downloadBt = Button(self.root, text="Download Files", 
-                command=partial(get_files, prj_name))
+                command=partial(self.get_files, prj_name))
         self.downloadBt.pack(padx=10, pady=10)
 
 
@@ -166,8 +103,8 @@ class project_display_gui:
 
     def get_db_image(self,project_id):
         # open db
-        #conn = sqlite3.connect('stl_manager.db')
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
         c = conn.cursor()
 
         # make statement 
@@ -190,7 +127,8 @@ class project_display_gui:
     def set_db_image(self,image_location):
         # open db
         #conn = sqlite3.connect('stl_manager.db')
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
         c = conn.cursor()
 
         ## first convert the file to a photoimage
@@ -245,7 +183,8 @@ class project_display_gui:
     def get_project_id(self):
         # open the db
         #conn = sqlite3.connect('stl_manager.db')
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
         c = conn.cursor()
 
 
@@ -265,7 +204,8 @@ class project_display_gui:
     def delete_entry(self):
         # open the db
         #conn = sqlite3.connect('stl_manager.db')
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
         c = conn.cursor()
 
 
@@ -305,6 +245,76 @@ class project_display_gui:
 
         #close the db
         c.close()
+
+
+
+    # function for getting (downloading) the files
+    def get_files(self, prj_name):
+    
+        ## connect to the db
+        #conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+
+        ## make a cursor
+        c = conn.cursor()
+
+        ## make your query
+        statement = ''' SELECT proj_files FROM projects WHERE proj_name = (?)'''
+        c.execute(statement, (prj_name,))
+
+        # save the output
+        output = c.fetchone()[0]
+
+        #print(output)
+        ## for now, I need a filename 
+        testFileName = self.get_file_name(prj_name)
+
+        ## should put this in a try statement, and if worked, display a confirmation message 
+        ## need to convert the files from binary
+        try:
+            ## get the location the user wants to place the download
+            dlBaseLocation = filedialog.askdirectory(initialdir = "~/Downloads/")
+            ## combine the download directory with the filename to make the full path name
+            tempFullDlPath = dlBaseLocation + "/" + testFileName
+
+            ## do the download
+            convertToDigitalData(output, tempFullDlPath)
+            ## show a message that says the it worked  
+            messagebox.showinfo(title="Download Status", message="Download Successful")
+        except:
+            print("Sorry, download didn't work.")
+            messagebox.showinfo(title="Download Status", message="Unable to download")
+
+        ## open up a file explorer to let the user pick the location
+        ## (provide the project name to the explorer)
+
+        # close the db
+        conn.close()
+
+
+    def get_file_name(self, prj_name):
+    
+        ## connect to the db
+        #conn = sqlite3.connect('stl_manager.db')
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        ## make a cursor
+        c = conn.cursor()
+
+        # first get the file names
+        statement = ''' SELECT file_name FROM projects WHERE proj_name = (?)'''
+        c.execute(statement, (prj_name,))
+
+        # save the output
+        output = c.fetchone()[0]
+
+        ## return the file name (the output)
+        return output
+
+        conn.close()
+
+
 
     def refresh(self):
         self.root.destroy()

@@ -4,108 +4,57 @@ import sqlite3
 from PIL import ImageTk, Image
 from add_proj_gui import *
 from proj_display_gui import *
+from about_gui import aAbout
+from info_gui import project_info
 import math
 from functools import partial
 from os.path import exists
+import pickle
+from tkinter.filedialog import asksaveasfilename, askopenfilename
 
-db_file='stl_manager.db'
-
-def make_db():
-    conn = sqlite3.connect(db_file)
-
-    c = conn.cursor()
-
-    c.execute("""CREATE TABLE projects(
-        proj_id INTEGER PRIMARY KEY,
-        proj_name TEXT,
-        file_name TEXT,
-        proj_files BLOB,
-        proj_image BLOB
-        )""")
-
-    conn.commit()
-    conn.close()
+#db_file='stl_manager.db'
 
 
 
-## function to perform database a show all query in the database
-def show_all_query(userRequest):
-    #print("Show_all_query recieved: " + userRequest)
+class program_settings:
+    db_location = 'stl_manager.db'
+    version = 0.05
 
-    # declare the statement variable and set if for of there
-    # is no search criteria
-    statement = '''SELECT proj_name FROM projects'''
+    def get_db_location(self):
+        return self.db_location
 
-    intFlag = 0
-    # if there is actually something to search, then prep the string and do the query
-    if(userRequest != ""):
-        intFlag += 1
-        formattedUserRequest = "%" + userRequest + "%"
-        statement = '''SELECT proj_name FROM projects WHERE proj_name LIKE ?''' 
-
-    conn = sqlite3.connect(db_file)
-
-    ## create cursor
-    c = conn.cursor()
-
-    ## show the db
-    #statement = '''SELECT proj_name FROM projects'''
-    if (intFlag == 0):
-        c.execute(statement)
-    else:
-        c.execute(statement , (formattedUserRequest,))
-
-
-    # then take all records and put them in a list
-    output = c.fetchall()
-
-    # make a empty list to hold the cleaned up results from the query
-    # in string form
-    projectList = []
-
-    # sadly, the elements in the query are surrounded by gargage.  Until 
-    # a better way is found, I have to take several passes at the 
-    # string, shaving away the un-needed chars. 
-    for row in output:
-        tempString = str(row)
-        ## need to remove the first, 2nd to last, and last char
-        tempString = tempString[:len(tempString)-1]
-        tempString = tempString[:len(tempString)-1]
-        tempString = tempString[1:]
-
-        tempString = tempString[:len(tempString)-1]
-        tempString = tempString[1:]
-
-        ## once cleaned, we put the string in the projectList
-        projectList.append(tempString)
-
-    return(projectList)
-    
-    ### just test code to see the db working
-    '''
-    print("All the data")
-    output = c.fetchall()
-    for row in output:
-        #print(row)
-        print(*row, sep="\n")
-    '''
-
-    ## close the database
-    conn.close()
-##----- end show_all_query()------
+    def set_db_location(self,given_locaiton):
+        self.db_location = given_locaiton
+        
 
             
 class MyGUI:
     def __init__(self):
+
+        # make a settings object
+        self.settings = program_settings()
+
+        ## try to load the saved settings
+        try: 
+            self.load_settings()
+            #print("after the load, the db location is: " + self.settings.get_db_location())
+        except:
+            pass
+
+        # get the database location
+        db_file = self.settings.get_db_location()
+        #print("db_file location is: " +  db_file)
+
         ## need a check to see if the db is made.  if
         ## not, then make it. 
         if not(exists(db_file)):
-            make_db()
+            self.make_db()
 
 
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
+        
 
         ## function to open the "add new project" window
         def add_function():
@@ -115,6 +64,62 @@ class MyGUI:
         ## a callback function, to help bind the searchEntry with the searchBt
         def enter_callback(event):
             self.refresh()
+
+        def donothing():
+            meh = 0
+
+        def new_db():
+            ## open a new messagedialogbox and get desired name / location 
+            ## for the new db
+            filename = asksaveasfilename()
+
+            ## set the settings new location in the settings object
+            self.settings.set_db_location(filename)
+            db_file = self.settings.get_db_location()
+            
+            ## print out the location #### testing ######
+            #print("DB file to be created: " + self.settings.get_db_location())
+
+            self.store_settings()
+
+            ## make a new db at the new location 
+            self.make_db()
+
+            #refresh the display view
+            self.refresh()
+
+        def open_db():
+            filename = askopenfilename()
+
+            self.settings.set_db_location(filename)
+
+            self.refresh()
+
+            # update db settings 
+            self.store_settings()
+
+
+        def open_about():
+            a_about = aAbout()
+
+        def show_info():
+            proj_info = project_info(self)
+
+
+        
+        ## add the menu stuff 
+        self.menubar = Menu(self.root)
+        self.filemenu = Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="New Database", command=new_db)
+        self.filemenu.add_command(label="Open Database", command=open_db)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        
+        self.helpmenu = Menu(self.menubar, tearoff=0)
+        self.helpmenu.add_command(label="Info", command=show_info)
+        self.helpmenu.add_command(label="About", command=open_about)
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
+
+        self.root.config(menu=self.menubar)
 
 
         ## defining the area on the left of the program that will hold
@@ -210,7 +215,7 @@ class MyGUI:
         searchCritia = self.getSearch()
 
         ## will have to loop through a list to get the contents of the lables 
-        self.viewResultsGenerator(show_all_query(searchCritia), self.elementFrame)
+        self.viewResultsGenerator(self.show_all_query(searchCritia), self.elementFrame)
 
         ## pack everything
         self.subViewFrame.pack(fill=BOTH, expand=1)
@@ -319,7 +324,8 @@ class MyGUI:
     def get_project_id(self, project_name):
 
         ## open the db
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.settings.get_db_location())
 
         ## create cursor
         c = conn.cursor()
@@ -338,10 +344,10 @@ class MyGUI:
         
 
 
-
     def get_db_image(self, project_id):
         ## open the db
-        conn = sqlite3.connect(db_file)
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.settings.get_db_location())
 
         ## create cursor
         c = conn.cursor()
@@ -358,6 +364,8 @@ class MyGUI:
 
         return output
 
+
+
     def prep_image(self, aBinaryFile):
         convertToDigitalData(aBinaryFile, "tempImage")
         
@@ -369,8 +377,114 @@ class MyGUI:
         return resized_photo_img
 
 
+
+    def make_db(self):
+        #conn = sqlite3.connect(self.db_file)
+        conn = sqlite3.connect(self.settings.get_db_location())
+
+        c = conn.cursor()
+
+        c.execute("""CREATE TABLE projects(
+            proj_id INTEGER PRIMARY KEY,
+            proj_name TEXT,
+            file_name TEXT,
+            proj_files BLOB,
+            proj_image BLOB
+            )""")
+
+        conn.commit()
+        conn.close()
         
         
+
+
+    ## function to perform database a show all query in the database
+    def show_all_query(self,userRequest):
+        #print("Show_all_query recieved: " + userRequest)
+
+        # declare the statement variable and set if for of there
+        # is no search criteria
+        statement = '''SELECT proj_name FROM projects'''
+
+        intFlag = 0
+        # if there is actually something to search, then prep the string and do the query
+        if(userRequest != ""):
+            intFlag += 1
+            formattedUserRequest = "%" + userRequest + "%"
+            statement = '''SELECT proj_name FROM projects WHERE proj_name LIKE ?''' 
+
+        #conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(self.settings.get_db_location())
+
+        ## create cursor
+        c = conn.cursor()
+
+        ## show the db
+        #statement = '''SELECT proj_name FROM projects'''
+        if (intFlag == 0):
+            c.execute(statement)
+        else:
+            c.execute(statement , (formattedUserRequest,))
+
+
+        # then take all records and put them in a list
+        output = c.fetchall()
+
+        # make a empty list to hold the cleaned up results from the query
+        # in string form
+        projectList = []
+
+        # sadly, the elements in the query are surrounded by gargage.  Until 
+        # a better way is found, I have to take several passes at the 
+        # string, shaving away the un-needed chars. 
+        for row in output:
+            tempString = str(row)
+            ## need to remove the first, 2nd to last, and last char
+            tempString = tempString[:len(tempString)-1]
+            tempString = tempString[:len(tempString)-1]
+            tempString = tempString[1:]
+
+            tempString = tempString[:len(tempString)-1]
+            tempString = tempString[1:]
+
+            ## once cleaned, we put the string in the projectList
+            projectList.append(tempString)
+
+        return(projectList)
+    
+        ### just test code to see the db working
+        '''
+        print("All the data")
+        output = c.fetchall()
+        for row in output:
+            #print(row)
+            print(*row, sep="\n")
+        '''
+
+        ## close the database
+        conn.close()
+
+    def load_settings(self):
+        stl_mg_setting = open('stl_settings', 'rb')
+        self.settings = pickle.load(stl_mg_setting)
+        #print("Load_settings: value is: " + self.settings.get_db_location())
+        stl_mg_setting.close()
+        
+
+
+    def store_settings(self):
+        ## open the settings file
+        ### change setting location to something that doesnt change
+        stl_mg_setting = open('stl_settings', 'wb')
+
+        ## convert settings object and write to file
+        pickle.dump(self.settings, stl_mg_setting)
+        #print("Store_settings: value is: " + self.settings.get_db_location())
+
+        ## close the file
+        stl_mg_setting.close()
+
+
 
 
 ## call the program
