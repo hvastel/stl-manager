@@ -5,6 +5,7 @@ from functools import partial
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
+from tkinter.messagebox import askyesno
 
 
 db_file='stl_manager.db'
@@ -88,7 +89,8 @@ class project_display_gui:
 
 
         ## need a delete button
-        self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
+        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
+        self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.confirm_delete)
         self.deleteBt.pack(padx=10, pady=10)
 
         self.root.mainloop()
@@ -162,10 +164,10 @@ class project_display_gui:
         ## bring up a file explorer to let the user choose the new project image
          
         image_location = askopenfilename()
-        #print("photo location: " + image_location)
+        #print("image_location is: " + image_location)
 
         ## only set image if we receive a good image
-        if(image_location == ''): ## add jpeg or png check
+        if((image_location == '') or (image_location == ())): ## add jpeg or png check
             pass  ## cancel was selected, nothing to do
         elif((image_location[-3:] == "jpeg") or (image_location[-3:] == "JPEG") or (image_location[-3:] == "png")
                 or (image_location[-3:] == "PNG") or (image_location[-3:] == "jpg") or (image_location[-3:] == "JPG")): 
@@ -201,10 +203,15 @@ class project_display_gui:
 
 
 
+    def confirm_delete(self):
+        answer = askyesno(title='confirmation', message='Are you sure that you want to delete this project?')
+
+        if answer: 
+            self.delete_entry()
+
+
     def delete_entry(self):
         # open the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
         conn = sqlite3.connect(self.MyGui.settings.get_db_location())
         c = conn.cursor()
 

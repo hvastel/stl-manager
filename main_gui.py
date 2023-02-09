@@ -11,14 +11,12 @@ from functools import partial
 from os.path import exists
 import pickle
 from tkinter.filedialog import asksaveasfilename, askopenfilename
-
-#db_file='stl_manager.db'
-
+from tkinter import messagebox
 
 
 class program_settings:
     db_location = 'stl_manager.db'
-    version = 0.05
+    version = 0.06
 
     def get_db_location(self):
         return self.db_location
@@ -73,30 +71,43 @@ class MyGUI:
             ## for the new db
             filename = asksaveasfilename()
 
-            ## set the settings new location in the settings object
-            self.settings.set_db_location(filename)
-            db_file = self.settings.get_db_location()
+            ## check if file exsist and verify correct type
+            if (filename == ()): ## cancel was pressed
+                pass
+            else:
+                ## append '.db' to the filename
+                filename = filename + '.db'
+
+                ## set the settings new location in the settings object
+                self.settings.set_db_location(filename)
+                db_file = self.settings.get_db_location()
             
-            ## print out the location #### testing ######
-            #print("DB file to be created: " + self.settings.get_db_location())
+                ## print out the location #### testing ######
+                #print("DB file to be created: " + self.settings.get_db_location())
 
-            self.store_settings()
+                self.store_settings()
 
-            ## make a new db at the new location 
-            self.make_db()
+                ## make a new db at the new location 
+                self.make_db()
 
-            #refresh the display view
-            self.refresh()
+                #refresh the display view
+                self.refresh()
 
         def open_db():
             filename = askopenfilename()
 
-            self.settings.set_db_location(filename)
+            ## check if file exsist and verify correct type
+            if (filename == ()): ## cancel was pressed
+                pass
+            elif (filename[-3:] == '.db'):
+                self.settings.set_db_location(filename)
+                self.refresh()
 
-            self.refresh()
-
-            # update db settings 
-            self.store_settings()
+                # update db settings 
+                self.store_settings()
+            else:
+                # message that says the correct file type
+                messagebox.showerror(title="Error", message="Invalid file type")
 
 
         def open_about():
