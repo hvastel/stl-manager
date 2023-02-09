@@ -16,13 +16,16 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = 'stl_manager.db'
-    version = 0.06
+    version = 0.07
 
     def get_db_location(self):
         return self.db_location
 
     def set_db_location(self,given_locaiton):
         self.db_location = given_locaiton
+
+    def get_version(self):
+        return self.version
         
 
             
@@ -111,7 +114,7 @@ class MyGUI:
 
 
         def open_about():
-            a_about = aAbout()
+            a_about = aAbout(self)
 
         def show_info():
             proj_info = project_info(self)

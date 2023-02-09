@@ -2,12 +2,14 @@ from tkinter import *
 
 
 class aAbout:
-    def __init__(self):
+    def __init__(self, MyGui):
+
+        self.MyGui = MyGui
 
         self.root = Tk()
 
         self.title = "STL Manager"
-        self.versionNumber = "0.05"
+        self.versionNumber = str(self.MyGui.settings.get_version())
         self.creator = "Bernard Ugwu"
 
         self.root.geometry('300x200')
