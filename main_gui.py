@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = 'stl_manager.db'
-    version = 0.05
+    version = 0.06
 
     def get_db_location(self):
         return self.db_location
