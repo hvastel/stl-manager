@@ -46,7 +46,7 @@ class add_project_gui:
         ##  function to open the file explorer selector 
         ## and get the file address
         def open_file_chooser():
-            filename = askopenfilename()
+            filename = askopenfilename(initialdir='~/Documents')
             self.proj_file_loc_ent.insert(END,filename)
 
         ## button for file selector

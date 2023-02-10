@@ -72,10 +72,12 @@ class MyGUI:
         def new_db():
             ## open a new messagedialogbox and get desired name / location 
             ## for the new db
-            filename = asksaveasfilename()
+            filename = asksaveasfilename(initialdir='~/Documents')
 
             ## check if file exsist and verify correct type
             if (filename == ()): ## cancel was pressed
+                pass
+            elif (filename == ''): ## empty filename given
                 pass
             else:
                 ## append '.db' to the filename
@@ -100,7 +102,7 @@ class MyGUI:
             filename = askopenfilename()
 
             ## check if file exsist and verify correct type
-            if (filename == ()): ## cancel was pressed
+            if ((filename == ()) or (filename == '')): ## cancel was pressed
                 pass
             elif (filename[-3:] == '.db'):
                 self.settings.set_db_location(filename)
@@ -119,6 +121,8 @@ class MyGUI:
         def show_info():
             proj_info = project_info(self)
 
+        def exit_program():
+            self.root.destroy()
 
         
         ## add the menu stuff 
@@ -126,6 +130,7 @@ class MyGUI:
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="New Database", command=new_db)
         self.filemenu.add_command(label="Open Database", command=open_db)
+        self.filemenu.add_command(label="Quit", command=exit_program)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         
         self.helpmenu = Menu(self.menubar, tearoff=0)

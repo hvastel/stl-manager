@@ -32,9 +32,9 @@ def convertToDigitalData(blobData, filename):
 
 ##  function to open the file explorer selector 
 ## and get the file address
-def open_file_chooser():
-    filename = askopenfilename()
-    self.proj_file_loc_ent.insert(END,filename)
+#def open_file_chooser():
+#    filename = askopenfilename()
+#    self.proj_file_loc_ent.insert(END,filename)
 
 
 
@@ -155,15 +155,15 @@ class project_display_gui:
         c.close()
 
 
-    def open_file_chooser(self):
-        filename = askopenfilename()
-        return filename
+#    def open_file_chooser(self):
+#        filename = askopenfilename(initialdir='~/Documents')
+#        return filename
 
     def change_project_image(self):
         
         ## bring up a file explorer to let the user choose the new project image
          
-        image_location = askopenfilename()
+        image_location = askopenfilename(initialdir='~/Documents')
         #print("image_location is: " + image_location)
 
         ## only set image if we receive a good image
@@ -173,6 +173,7 @@ class project_display_gui:
                 or (image_location[-3:] == "PNG") or (image_location[-3:] == "jpg") or (image_location[-3:] == "JPG")): 
             try:
                 self.set_db_image(image_location)
+                self.MyGui.refresh()
                 self.refresh()
 
             except:
