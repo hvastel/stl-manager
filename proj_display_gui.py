@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
+import os
 
 
 db_file='stl_manager.db'
@@ -105,8 +106,7 @@ class project_display_gui:
 
     def get_db_image(self,project_id):
         # open db
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
         # make statement 
@@ -128,9 +128,7 @@ class project_display_gui:
 
     def set_db_image(self,image_location):
         # open db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
         ## first convert the file to a photoimage
@@ -185,9 +183,7 @@ class project_display_gui:
 
     def get_project_id(self):
         # open the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
 
@@ -213,7 +209,7 @@ class project_display_gui:
 
     def delete_entry(self):
         # open the db
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
 
@@ -260,9 +256,7 @@ class project_display_gui:
     def get_files(self, prj_name):
     
         ## connect to the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
 
         ## make a cursor
         c = conn.cursor()
@@ -304,9 +298,7 @@ class project_display_gui:
     def get_file_name(self, prj_name):
     
         ## connect to the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         ## make a cursor
         c = conn.cursor()
 

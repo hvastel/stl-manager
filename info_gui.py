@@ -57,7 +57,7 @@ class project_info:
     def get_project_cnt(self):
 
         # open the db
-        conn = sqlite3.connect(self.mainGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.mainGui.settings.get_db_location()))
 
         ## create cursor
         c = conn.cursor()
@@ -80,7 +80,7 @@ class project_info:
 
 
     def get_db_size(self):
-        file_size_in_bytes = os.path.getsize(self.mainGui.settings.get_db_location())
+        file_size_in_bytes = os.path.getsize(os.path.expanduser(self.mainGui.settings.get_db_location()))
         file_size_Mb = file_size_in_bytes / 1000000
         return math.floor(file_size_Mb)
 

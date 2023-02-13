@@ -15,8 +15,8 @@ from tkinter import messagebox
 
 
 class program_settings:
-    db_location = 'stl_manager.db'
-    version = 0.07
+    db_location = '~/Documents/stl_manager.db'
+    version = 0.08
 
     def get_db_location(self):
         return self.db_location
@@ -43,12 +43,11 @@ class MyGUI:
             pass
 
         # get the database location
-        db_file = self.settings.get_db_location()
-        #print("db_file location is: " +  db_file)
+        self.db_file = os.path.expanduser(self.settings.get_db_location())
 
         ## need a check to see if the db is made.  if
         ## not, then make it. 
-        if not(exists(db_file)):
+        if not(exists(self.db_file)):
             self.make_db()
 
 
@@ -87,9 +86,6 @@ class MyGUI:
                 self.settings.set_db_location(filename)
                 db_file = self.settings.get_db_location()
             
-                ## print out the location #### testing ######
-                #print("DB file to be created: " + self.settings.get_db_location())
-
                 self.store_settings()
 
                 ## make a new db at the new location 
@@ -99,7 +95,8 @@ class MyGUI:
                 self.refresh()
 
         def open_db():
-            filename = askopenfilename()
+            #filename = askopenfilename()
+            filename = askopenfilename(initialdir='~/Documents')
 
             ## check if file exsist and verify correct type
             if ((filename == ()) or (filename == '')): ## cancel was pressed
@@ -173,8 +170,6 @@ class MyGUI:
         self.mainViewFrame = LabelFrame(self.root, text='Results')
         self.mainViewFrame.pack(side=RIGHT, fill="both", expand=True, padx=25, pady=25)
 
-        ### note: scrollable frame are a HUGE PAIN! 
-        ## used this site for reference: https://blog.teclado.com/tkinter-scrollable-frames/
 
         ## call a function that will handle the building of the subViewFrame.  
         self.buildSubViewFrame()
@@ -294,9 +289,8 @@ class MyGUI:
             #buttonNameList[listPlace] = Button(tempFrame, image=test_img, 
             buttonNameList[listPlace] = Button(tempFrame, image=resized_stl_img, 
                     command=partial(self.show_display, project))
-            #buttonNameList[listPlace].image = test_img # keep a reference! (screw python...) 
-            buttonNameList[listPlace].image = resized_stl_img # keep a reference! (screw python...) 
-
+            
+            buttonNameList[listPlace].image = resized_stl_img # keep a reference!  
         
             #button.pack()
             buttonNameList[listPlace].pack()
@@ -343,8 +337,7 @@ class MyGUI:
     def get_project_id(self, project_name):
 
         ## open the db
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.settings.get_db_location()))
 
         ## create cursor
         c = conn.cursor()
@@ -365,8 +358,7 @@ class MyGUI:
 
     def get_db_image(self, project_id):
         ## open the db
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.settings.get_db_location()))
 
         ## create cursor
         c = conn.cursor()
@@ -398,8 +390,8 @@ class MyGUI:
 
 
     def make_db(self):
-        #conn = sqlite3.connect(self.db_file)
-        conn = sqlite3.connect(self.settings.get_db_location())
+
+        conn = sqlite3.connect(os.path.expanduser(self.settings.get_db_location()))
 
         c = conn.cursor()
 
@@ -432,14 +424,12 @@ class MyGUI:
             formattedUserRequest = "%" + userRequest + "%"
             statement = '''SELECT proj_name FROM projects WHERE proj_name LIKE ?''' 
 
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.settings.get_db_location()))
 
         ## create cursor
         c = conn.cursor()
 
         ## show the db
-        #statement = '''SELECT proj_name FROM projects'''
         if (intFlag == 0):
             c.execute(statement)
         else:
