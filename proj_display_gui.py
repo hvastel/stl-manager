@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
+import os
 
 
 db_file='stl_manager.db'
@@ -32,9 +33,9 @@ def convertToDigitalData(blobData, filename):
 
 ##  function to open the file explorer selector 
 ## and get the file address
-def open_file_chooser():
-    filename = askopenfilename()
-    self.proj_file_loc_ent.insert(END,filename)
+#def open_file_chooser():
+#    filename = askopenfilename()
+#    self.proj_file_loc_ent.insert(END,filename)
 
 
 
@@ -105,8 +106,7 @@ class project_display_gui:
 
     def get_db_image(self,project_id):
         # open db
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
         # make statement 
@@ -128,9 +128,7 @@ class project_display_gui:
 
     def set_db_image(self,image_location):
         # open db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
         ## first convert the file to a photoimage
@@ -155,15 +153,15 @@ class project_display_gui:
         c.close()
 
 
-    def open_file_chooser(self):
-        filename = askopenfilename()
-        return filename
+#    def open_file_chooser(self):
+#        filename = askopenfilename(initialdir='~/Documents')
+#        return filename
 
     def change_project_image(self):
         
         ## bring up a file explorer to let the user choose the new project image
          
-        image_location = askopenfilename()
+        image_location = askopenfilename(initialdir='~/Documents')
         #print("image_location is: " + image_location)
 
         ## only set image if we receive a good image
@@ -173,6 +171,7 @@ class project_display_gui:
                 or (image_location[-3:] == "PNG") or (image_location[-3:] == "jpg") or (image_location[-3:] == "JPG")): 
             try:
                 self.set_db_image(image_location)
+                self.MyGui.refresh()
                 self.refresh()
 
             except:
@@ -184,9 +183,7 @@ class project_display_gui:
 
     def get_project_id(self):
         # open the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
 
@@ -212,7 +209,7 @@ class project_display_gui:
 
     def delete_entry(self):
         # open the db
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
 
@@ -259,9 +256,7 @@ class project_display_gui:
     def get_files(self, prj_name):
     
         ## connect to the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
 
         ## make a cursor
         c = conn.cursor()
@@ -303,9 +298,7 @@ class project_display_gui:
     def get_file_name(self, prj_name):
     
         ## connect to the db
-        #conn = sqlite3.connect('stl_manager.db')
-        #conn = sqlite3.connect(db_file)
-        conn = sqlite3.connect(self.MyGui.settings.get_db_location())
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         ## make a cursor
         c = conn.cursor()
 

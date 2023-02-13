@@ -17,8 +17,10 @@ def convertToBinaryData(filename):
 
 class add_project_gui:
     def __init__(self, MyGui):
-        #self.root = Tk()
         self.root = Toplevel()
+        self.MyGui = MyGui
+        ## keeps the add project window on top of the main window
+        self.root.lift(aboveThis=self.MyGui.root)
         self.root.title('Add Project')
         self.root.geometry('650x300')
 
@@ -46,7 +48,7 @@ class add_project_gui:
         ##  function to open the file explorer selector 
         ## and get the file address
         def open_file_chooser():
-            filename = askopenfilename()
+            filename = askopenfilename(initialdir='~/Documents')
             self.proj_file_loc_ent.insert(END,filename)
 
         ## button for file selector
@@ -64,8 +66,7 @@ class add_project_gui:
         def collectAndStore():
             try:
                 ## create a database
-                conn = sqlite3.connect(MyGui.settings.get_db_location())
-                #print("adding project, using db location: " + MyGui.settings.get_db_location())
+                conn = sqlite3.connect(os.path.expanduser(MyGui.settings.get_db_location()))
 
                 ## create cursor
                 c = conn.cursor()
