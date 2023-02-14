@@ -11,28 +11,49 @@ class project_info:
         self.root.title("Info")
         self.root.geometry('600x250')
         self.mainGui = mainGui
+        self.bg_color = 'white'
+        self.fg_color = 'black'
 
 
         self.db_name = self.get_db_name()
         self.db_location = self.get_db_location() 
-        self.db_size = self.get_db_size()
+        self.db_size = self.format_bytes(self.get_db_size())
         self.project_count = self.get_project_cnt()
 
-        self.db_name_label = Label(self.root, text="Database name: " + self.db_name, 
-                font=('Arial',16))
-        self.db_name_label.pack(padx=10, pady=(40,10))
 
-        self.db_loc_label = Label(self.root, text="Database location: " + 
-                self.db_location, font=('Arial', 14))
-        self.db_loc_label.pack(padx=10, pady=10)
+        ## make main title label
+        self.main_title_lb = Label(self.root, text='Current Database Information', font=('Arial', 20))
+        self.main_title_lb.pack(padx=10, pady=10)
 
-        self.db_size_label = Label(self.root, text="Database size:  " + str(self.db_size)
-                + " Mb", font=('Arial', 14))
-        self.db_size_label.pack(padx=10, pady=10)
 
-        self.project_cnt_label = Label(self.root, text="Project count: " + str(self.project_count),
-                font=('Arial', 14))
-        self.project_cnt_label.pack(padx=10, pady=10)
+        ## make a frame to hold info
+        self.info_frame = Frame(self.root, highlightbackground=self.fg_color, highlightthickness=2, bg=self.bg_color)
+        self.info_frame.pack(padx=10, pady=(0,10))
+
+        # will need at least 8 labels 
+        self.db_name_lb = Label(self.info_frame, text='Database name:', font=('Arial', 15), bg=self.bg_color,
+                fg=self.fg_color)
+        self.db_name_lb.grid(column=0, row=0, padx=(10,5), pady=5)
+        self.db_location_lb = Label(self.info_frame, text='Database Locaiton:', font=('Arial', 15), bg=self.bg_color,
+                fg=self.fg_color)
+        self.db_location_lb.grid(column=0, row=1, padx=(10,5), pady=5)
+        self.db_size_lb = Label(self.info_frame, text='Database Size:', font=('Arial', 15), bg=self.bg_color,
+                fg=self.fg_color)
+        self.db_size_lb.grid(column=0, row=2, padx=(10,5), pady=5)
+        self.db_page_cnt_lb = Label(self.info_frame, text='Project Count:', font=('Arial', 15), bg=self.bg_color,
+                fg=self.fg_color)
+        self.db_page_cnt_lb.grid(column=0, row=3, padx=(10,5), pady=5)
+
+
+        self.db_name_value_lb = Label(self.info_frame, text=self.db_name, bg=self.bg_color,
+                fg=self.fg_color, font=('Arial',12)).grid(column=1, row=0, padx=15) 
+        self.db_location_value_lb = Label(self.info_frame, text= self.db_location, bg=self.bg_color,
+                fg=self.fg_color, font=('Arial', 12)).grid(column=1, row=1, padx=15)
+        self.db_size_value_lb = Label(self.info_frame, text=self.db_size, bg=self.bg_color,
+                fg=self.fg_color, font=('Arial', 13)).grid(column=1, row=2, padx=15)
+        self.db_page_cnt_value_lb = Label(self.info_frame, text=self.project_count, bg=self.bg_color,
+                fg=self.fg_color, font=('Arial', 13)).grid(column=1, row=3, padx=15)
+        
 
         self.root.mainloop()
 
@@ -40,7 +61,6 @@ class project_info:
 
     def get_db_name(self):
 
-        # read from settings
         tempLoc = self.mainGui.settings.get_db_location()
         the_db_name = os.path.basename(tempLoc)
         return the_db_name
@@ -81,6 +101,19 @@ class project_info:
 
     def get_db_size(self):
         file_size_in_bytes = os.path.getsize(os.path.expanduser(self.mainGui.settings.get_db_location()))
-        file_size_Mb = file_size_in_bytes / 1000000
-        return math.floor(file_size_Mb)
+        #file_size_Mb = file_size_in_bytes / 1000000
+        #return math.floor(file_size_Mb)
+        return file_size_in_bytes
+
+
+    def format_bytes(self, size):
+        # 2**10 = 1024
+        power = 2**10
+        n = 0
+        power_labels = {0 : '', 1: 'Kb', 2: 'Mb', 3: 'Gb', 4: 'Tb'}
+        while size > power:
+            size /= power
+            n += 1
+        size_string = str(math.floor(size)) + ' ' +  power_labels[n]
+        return size_string
 
