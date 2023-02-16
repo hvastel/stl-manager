@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
+import tkinter.simpledialog
 import os
 
 
@@ -42,17 +43,19 @@ def convertToDigitalData(blobData, filename):
 
 class project_display_gui:
 
-    def __init__(self, mainGui, prj_name):
+    def __init__(self, mainGui, prj_id):
 
-        self.project_name = prj_name
         self.MyGui = mainGui
+        #self.project_name = prj_name
+        self.project_id = prj_id
+        self.project_name = self.get_project_name(prj_id)
 
         ## explaination for Toplevel: https://stackoverflow.com/questions/20251161/tkinter-tclerror-image-pyimage3-doesnt-exist
         self.root = Toplevel()
-        self.root.geometry('550x650')
+        self.root.geometry('550x700')
 
         ## get the project id 
-        self.project_id = self.get_project_id()
+        #self.project_id = self.get_project_id()
 
         # get the project image out of the database
         tempImageBinary = self.get_db_image(self.project_id)
@@ -75,22 +78,31 @@ class project_display_gui:
         
         self.project_image_bt.pack(padx=10, pady=10)
 
-        self.nameLb = Label(self.root, text="Project Name: " + prj_name, font=("None", 15))
-        self.nameLb.pack(padx=10, pady=10)
 
-        self.files_name = Label(self.root, text="File: " + self.get_file_name(prj_name), font=("None", 15))
-        self.files_name.pack(padx=10, pady=10)
+        ## added edit button to change project name 
+        self.editBt = Button(self.root, text='Edit', command=self.edit_mode)
+        self.editBt.pack(pady=10)
 
-        #self.tagsLb = Label(self.root, text="Tags:")
-        #self.tagsLb.pack(padx=10, pady=10)
+        self.project_name_display_lb = Label(self.root, text='Project Name:', font=('Arial', 15))
+        self.project_name_display_lb.pack()
+        
+        self.project_name_lb = Label(self.root, text=self.project_name, font=('Arial', 15))
+        self.project_name_lb.pack(pady=(5,15))
+
+        self.file_name_lb = Label(self.root, text='File Name:', font=('Arial', 15))
+        self.file_name_lb.pack()
+
+        self.file_name = Label(self.root, text=self.get_file_name(self.project_name), font=('Arial', 15))
+        self.file_name.pack(pady=(5,15))
+
+
 
         self.downloadBt = Button(self.root, text="Download Files", 
-                command=partial(self.get_files, prj_name))
+                command=partial(self.get_files, self.project_name))
         self.downloadBt.pack(padx=10, pady=10)
 
 
         ## need a delete button
-        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
         self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.confirm_delete)
         self.deleteBt.pack(padx=10, pady=10)
 
@@ -119,10 +131,10 @@ class project_display_gui:
 
         # close db
         c.close()
-        #print(output)
-        return output
 
         # return image
+        return output
+
 
 
 
@@ -130,10 +142,6 @@ class project_display_gui:
         # open db
         conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
-
-        ## first convert the file to a photoimage
-        #test_img = PhotoImage(file="./images/stan-medium.png")
-        #project_img = PhotoImage(image_location)
 
         # convert photoimage to binary
         try:
@@ -153,16 +161,11 @@ class project_display_gui:
         c.close()
 
 
-#    def open_file_chooser(self):
-#        filename = askopenfilename(initialdir='~/Documents')
-#        return filename
 
     def change_project_image(self):
         
         ## bring up a file explorer to let the user choose the new project image
-         
         image_location = askopenfilename(initialdir='~/Documents')
-        #print("image_location is: " + image_location)
 
         ## only set image if we receive a good image
         if((image_location == '') or (image_location == ())): ## add jpeg or png check
@@ -221,9 +224,6 @@ class project_display_gui:
         c.execute(statement, (self.project_name,))
         output = c.fetchone()[0]
 
-        #print(output)
-
-        # in a try
         try: 
             # do the remove 
             statement = 'DELETE FROM projects WHERE proj_id=? '
@@ -238,7 +238,6 @@ class project_display_gui:
             # refresh the element display
             self.MyGui.refresh() ## need to import the main gui
 
-            
             # destroy the frame 
             self.close()
 
@@ -268,28 +267,26 @@ class project_display_gui:
         # save the output
         output = c.fetchone()[0]
 
-        #print(output)
-        ## for now, I need a filename 
+        ## for now, we need the filename 
         testFileName = self.get_file_name(prj_name)
 
-        ## should put this in a try statement, and if worked, display a confirmation message 
+        ## try statement, and if worked, display a confirmation message 
         ## need to convert the files from binary
         try:
             ## get the location the user wants to place the download
             dlBaseLocation = filedialog.askdirectory(initialdir = "~/Downloads/")
+
             ## combine the download directory with the filename to make the full path name
             tempFullDlPath = dlBaseLocation + "/" + testFileName
 
             ## do the download
             convertToDigitalData(output, tempFullDlPath)
+
             ## show a message that says the it worked  
             messagebox.showinfo(title="Download Status", message="Download Successful")
         except:
             print("Sorry, download didn't work.")
             messagebox.showinfo(title="Download Status", message="Unable to download")
-
-        ## open up a file explorer to let the user pick the location
-        ## (provide the project name to the explorer)
 
         # close the db
         conn.close()
@@ -315,13 +312,66 @@ class project_display_gui:
         conn.close()
 
 
+    def get_project_name(self, project_id):
+
+        ## connect to the db
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
+        ## make a cursor
+        c = conn.cursor()
+
+        # first get the file names
+        statement = ''' SELECT proj_name FROM projects WHERE proj_id = (?)'''
+        c.execute(statement, (project_id,))
+        
+        # save the output
+        output = c.fetchone()[0]
+
+        ## return the file name (the output)
+        return output
+
+        conn.close()
+
+
 
     def refresh(self):
         self.root.destroy()
-        self.__init__(self.MyGui, self.project_name)
+        self.__init__(self.MyGui, self.project_id)
 
 
 
     def close(self):
         self.root.destroy()
+
+
+    def edit_mode(self):
+        ## pull up a small dialog box asking for a new project name
+        new_prod_name = tkinter.simpledialog.askstring(title='New project name', prompt="Please enter new project name")
+        self.set_project_name(new_prod_name)
+
+
+    def set_project_name(self, new_prod_name):
+        #print("pretend that the project was renamed :)")
+
+        ## if the new project string is not null or empty
+        if ((new_prod_name != None) or (new_prod_name != '')):
+
+            # setup your sql command
+            statement = 'UPDATE projects SET proj_name = (?) WHERE proj_id = (?)'
+            
+            # open the database 
+            conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
+            c = conn.cursor()
+
+            # execute the command
+            try:
+                c.execute(statement, (new_prod_name,self.project_id,))
+                conn.commit()
+                self.refresh()
+                self.MyGui.refresh()
+            except: 
+                print("Error: attempted to update project name, db error")
+                messagebox.showerror(title="Update Status", message="Unable to update project name")
+
+            # close the db
+            conn.close()
 

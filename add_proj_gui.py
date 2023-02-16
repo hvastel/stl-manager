@@ -6,14 +6,6 @@ from pathlib import Path
 import os
 from tkinter import messagebox
 
-db_file='stl_manager.db'
-
-# Convert digital data to binary format
-def convertToBinaryData(filename):
-    with open(filename, 'rb') as file:
-        blobData = file.read()
-    return blobData
-
 
 class add_project_gui:
     def __init__(self, MyGui):
@@ -22,26 +14,26 @@ class add_project_gui:
         ## keeps the add project window on top of the main window
         self.root.lift(aboveThis=self.MyGui.root)
         self.root.title('Add Project')
-        self.root.geometry('650x300')
+        self.root.geometry('650x240')
 
         ## Label for project name
-        proj_name_lb = Label(self.root, text='Project Name', font=("None", 14))
-        proj_name_lb.pack(pady=20)
+        proj_name_lb = Label(self.root, text='Project Name', font=("Arial", 14))
+        proj_name_lb.pack(pady=(20, 5))
 
         ## entry for project name
         self.proj_name_ent = Entry(self.root, width=35)
-        self.proj_name_ent.pack()
+        self.proj_name_ent.pack(pady=(5,10))
 
         ## label for file location
-        self.proj_location_lb = Label(self.root, text='Project Location', font=("None", 14))
-        self.proj_location_lb.pack(padx=10, pady=10)
+        self.proj_location_lb = Label(self.root, text='Project Location', font=("Arial", 14))
+        self.proj_location_lb.pack(pady=5)
 
         ## frame to hold the file entry and selector button 
         self.location_subframe = Frame(self.root)
-        self.location_subframe.pack(padx=10, pady=10)
+        self.location_subframe.pack(padx=10, pady=5)
 
         ## entry for project file location
-        self.proj_file_loc_ent = Entry(self.location_subframe, width=35)
+        self.proj_file_loc_ent = Entry(self.location_subframe, width=40)
         self.proj_file_loc_ent.pack(side=LEFT, padx=10)
         
 
@@ -90,11 +82,11 @@ class add_project_gui:
                         temp_file_name = os.path.basename(temp_project_loc)
 
                         ## convert the project file to binary
-                        projectBinaryFiles = convertToBinaryData(temp_project_loc)
+                        projectBinaryFiles = self.convertToBinaryData(temp_project_loc)
 
                         ### ---- small change, adding image as default 
-                        #projectImageBinary = convertToBinaryData("/home/bernard/nfs/code/python3/stl-app/images/stan-medium.png")
-                        projectImageBinary = convertToBinaryData("images/stan-medium.png")
+                        ### TODO - change default image location from string to program settings attribute
+                        projectImageBinary = self.convertToBinaryData("images/stan-medium.png")
                 
                         ## write collected info into the database
                         c.execute(
@@ -115,14 +107,6 @@ class add_project_gui:
                     else:
                         messagebox.showerror(title="Project Add Error", message="Valid file path required")
 
-                
-                    ## troubleshooting
-                    #statement = '''SELECT proj_id, proj_name  FROM projects'''
-                    #showOutput = c.execute(statement)
-                    #print(showOutput)
-                    #for row in showOutput:
-                    #    print(row)
-                
                 c.close()
                 
             except sqlite3.Error as error: 
@@ -130,8 +114,14 @@ class add_project_gui:
 
         ## button to add / create project 
         self.proj_add_bt = Button(self.root, text="Add Project", command=collectAndStore)
-        self.proj_add_bt.pack(padx=10, pady=10)
-
-
+        self.proj_add_bt.pack(padx=10, pady=5)
 
         self.root.mainloop()
+
+
+
+    # Convert digital data to binary format
+    def convertToBinaryData(self, filename):
+        with open(filename, 'rb') as file:
+            blobData = file.read()
+        return blobData

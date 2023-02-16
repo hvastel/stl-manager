@@ -31,7 +31,7 @@ class project_info:
         self.info_frame.pack(padx=10, pady=(0,10))
 
         # will need at least 8 labels 
-        self.db_name_lb = Label(self.info_frame, text='Database name:', font=('Arial', 15), bg=self.bg_color,
+        self.db_name_lb = Label(self.info_frame, text='Database Name:', font=('Arial', 15), bg=self.bg_color,
                 fg=self.fg_color)
         self.db_name_lb.grid(column=0, row=0, padx=(10,5), pady=5)
         self.db_location_lb = Label(self.info_frame, text='Database Locaiton:', font=('Arial', 15), bg=self.bg_color,
