@@ -81,16 +81,12 @@ class project_display_gui:
         self.files_name = Label(self.root, text="File: " + self.get_file_name(prj_name), font=("None", 15))
         self.files_name.pack(padx=10, pady=10)
 
-        #self.tagsLb = Label(self.root, text="Tags:")
-        #self.tagsLb.pack(padx=10, pady=10)
-
         self.downloadBt = Button(self.root, text="Download Files", 
                 command=partial(self.get_files, prj_name))
         self.downloadBt.pack(padx=10, pady=10)
 
 
         ## need a delete button
-        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.delete_entry)
         self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.confirm_delete)
         self.deleteBt.pack(padx=10, pady=10)
 
@@ -119,10 +115,10 @@ class project_display_gui:
 
         # close db
         c.close()
-        #print(output)
-        return output
 
         # return image
+        return output
+
 
 
 
@@ -130,10 +126,6 @@ class project_display_gui:
         # open db
         conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
-
-        ## first convert the file to a photoimage
-        #test_img = PhotoImage(file="./images/stan-medium.png")
-        #project_img = PhotoImage(image_location)
 
         # convert photoimage to binary
         try:
@@ -153,16 +145,11 @@ class project_display_gui:
         c.close()
 
 
-#    def open_file_chooser(self):
-#        filename = askopenfilename(initialdir='~/Documents')
-#        return filename
 
     def change_project_image(self):
         
         ## bring up a file explorer to let the user choose the new project image
-         
         image_location = askopenfilename(initialdir='~/Documents')
-        #print("image_location is: " + image_location)
 
         ## only set image if we receive a good image
         if((image_location == '') or (image_location == ())): ## add jpeg or png check
@@ -221,9 +208,6 @@ class project_display_gui:
         c.execute(statement, (self.project_name,))
         output = c.fetchone()[0]
 
-        #print(output)
-
-        # in a try
         try: 
             # do the remove 
             statement = 'DELETE FROM projects WHERE proj_id=? '
@@ -238,7 +222,6 @@ class project_display_gui:
             # refresh the element display
             self.MyGui.refresh() ## need to import the main gui
 
-            
             # destroy the frame 
             self.close()
 
@@ -268,28 +251,26 @@ class project_display_gui:
         # save the output
         output = c.fetchone()[0]
 
-        #print(output)
-        ## for now, I need a filename 
+        ## for now, we need the filename 
         testFileName = self.get_file_name(prj_name)
 
-        ## should put this in a try statement, and if worked, display a confirmation message 
+        ## try statement, and if worked, display a confirmation message 
         ## need to convert the files from binary
         try:
             ## get the location the user wants to place the download
             dlBaseLocation = filedialog.askdirectory(initialdir = "~/Downloads/")
+
             ## combine the download directory with the filename to make the full path name
             tempFullDlPath = dlBaseLocation + "/" + testFileName
 
             ## do the download
             convertToDigitalData(output, tempFullDlPath)
+
             ## show a message that says the it worked  
             messagebox.showinfo(title="Download Status", message="Download Successful")
         except:
             print("Sorry, download didn't work.")
             messagebox.showinfo(title="Download Status", message="Unable to download")
-
-        ## open up a file explorer to let the user pick the location
-        ## (provide the project name to the explorer)
 
         # close the db
         conn.close()

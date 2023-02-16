@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.09
+    version = 0.10
 
     def get_db_location(self):
         return self.db_location
@@ -65,8 +65,8 @@ class MyGUI:
         def enter_callback(event):
             self.refresh()
 
-        def donothing():
-            meh = 0
+        #def donothing():
+        #    meh = 0
 
         def new_db():
             ## open a new messagedialogbox and get desired name / location 
@@ -286,7 +286,6 @@ class MyGUI:
             resized_stl_img = self.prep_image(temp_image_binary)
 
             ## button with image
-            #buttonNameList[listPlace] = Button(tempFrame, image=test_img, 
             buttonNameList[listPlace] = Button(tempFrame, image=resized_stl_img, 
                     command=partial(self.show_display, project))
             
@@ -406,7 +405,6 @@ class MyGUI:
         conn.commit()
         conn.close()
         
-        
 
 
     ## function to perform database a show all query in the database
@@ -460,15 +458,6 @@ class MyGUI:
             projectList.append(tempString)
 
         return(projectList)
-    
-        ### just test code to see the db working
-        '''
-        print("All the data")
-        output = c.fetchall()
-        for row in output:
-            #print(row)
-            print(*row, sep="\n")
-        '''
 
         ## close the database
         conn.close()
