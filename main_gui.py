@@ -176,8 +176,8 @@ class MyGUI:
 
         self.root.mainloop()
 
-    def show_display(self,project):
-        project_display_gui(self, project)
+    def show_display(self,project_id):
+        project_display_gui(self, project_id)
 
     def getSearch(self):
         ## get the text from the search field 
@@ -287,7 +287,8 @@ class MyGUI:
 
             ## button with image
             buttonNameList[listPlace] = Button(tempFrame, image=resized_stl_img, 
-                    command=partial(self.show_display, project))
+                    #command=partial(self.show_display, project))
+                    command=partial(self.show_display, temp_project_id))
             
             buttonNameList[listPlace].image = resized_stl_img # keep a reference!  
         
