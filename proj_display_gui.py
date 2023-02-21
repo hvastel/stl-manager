@@ -8,6 +8,8 @@ from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
 import tkinter.simpledialog
 import os
+#from tkinter.tix import Balloon
+import Pmw
 
 
 db_file='stl_manager.db'
@@ -54,8 +56,10 @@ class project_display_gui:
         self.root = Toplevel()
         self.root.geometry('550x700')
 
-        ## get the project id 
-        #self.project_id = self.get_project_id()
+        ## create a tooltip for help message on image button
+        #self.tip=Balloon(self.root)
+        Pmw.initialise(self.root) #initializing it in the root window
+        self.tip=Pmw.Balloon(self.root)
 
         # get the project image out of the database
         tempImageBinary = self.get_db_image(self.project_id)
@@ -75,6 +79,9 @@ class project_display_gui:
         ## image of the project file 
         self.project_image_bt = Button(self.root, image=self.photo_img, 
                 command=self.change_project_image)
+
+        #self.tip.bind_widget(self.project_image_bt, balloonmsg="Click to change project image")
+        self.tip.bind(self.project_image_bt, "Click to change project image")
         
         self.project_image_bt.pack(padx=10, pady=10)
 
@@ -165,12 +172,12 @@ class project_display_gui:
     def change_project_image(self):
         
         ## bring up a file explorer to let the user choose the new project image
-        image_location = askopenfilename(initialdir='~/Documents')
+        image_location = askopenfilename(initialdir='~/Pictures')
 
         ## only set image if we receive a good image
         if((image_location == '') or (image_location == ())): ## add jpeg or png check
             pass  ## cancel was selected, nothing to do
-        elif((image_location[-3:] == "jpeg") or (image_location[-3:] == "JPEG") or (image_location[-3:] == "png")
+        elif((image_location[-4:] == "jpeg") or (image_location[-4:] == "JPEG") or (image_location[-3:] == "png")
                 or (image_location[-3:] == "PNG") or (image_location[-3:] == "jpg") or (image_location[-3:] == "JPG")): 
             try:
                 self.set_db_image(image_location)
@@ -328,15 +335,13 @@ class project_display_gui:
 
         ## return the file name (the output)
         return output
-
+    
         conn.close()
-
 
 
     def refresh(self):
         self.root.destroy()
         self.__init__(self.MyGui, self.project_id)
-
 
 
     def close(self):
@@ -350,7 +355,6 @@ class project_display_gui:
 
 
     def set_project_name(self, new_prod_name):
-        #print("pretend that the project was renamed :)")
 
         ## if the new project string is not null or empty
         if ((new_prod_name != None) or (new_prod_name != '')):
@@ -367,7 +371,7 @@ class project_display_gui:
                 c.execute(statement, (new_prod_name,self.project_id,))
                 conn.commit()
                 self.refresh()
-                self.MyGui.refresh()
+                #self.MyGui.refresh()
             except: 
                 print("Error: attempted to update project name, db error")
                 messagebox.showerror(title="Update Status", message="Unable to update project name")
