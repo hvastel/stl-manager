@@ -16,7 +16,11 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.10
+    version = 0.11
+    
+    text_color = 'black'
+    bg_Color = '#d9d9d9' # light gray
+    comp_color = '#d9d9d9' # light gray
 
     def get_db_location(self):
         return self.db_location
@@ -26,6 +30,31 @@ class program_settings:
 
     def get_version(self):
         return self.version
+
+    def set_theme(self, theme_number):
+        if (theme_number == 0): 
+            # set default theme
+            self.text_color = 'black'
+            self.bg_Color = '#d9d9d9'
+            self.comp_color = '#d9d9d9'
+
+        elif (theme_number == 1):
+            # set dark theme
+            self.text_color = 'white'
+            self.bg_Color = '#424242'
+            self.comp_color = '#9e9e9e'
+        else:
+            # do nothing
+            pass
+
+    def get_text_color(self):
+        return self.text_color
+
+    def get_bg_color(self):
+        return self.bg_Color
+
+    def get_comp_color(self):
+        return self.comp_color
         
 
             
@@ -54,6 +83,7 @@ class MyGUI:
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
+        self.root.config(bg=self.settings.get_bg_color())
         
 
         ## function to open the "add new project" window
@@ -65,8 +95,8 @@ class MyGUI:
         def enter_callback(event):
             self.refresh()
 
-        #def donothing():
-        #    meh = 0
+        def donothing():
+            meh = 0
 
         def new_db():
             ## open a new messagedialogbox and get desired name / location 
@@ -121,14 +151,44 @@ class MyGUI:
         def exit_program():
             self.root.destroy()
 
+        def set_theme_default():
+            # load dark colors preset
+            self.settings.set_theme(0)
+            # re-apply widget colors, (except in subviewframe)
+            self.redraw_colors()
+            # do a refresh to get all widgets in subviewframe
+            self.refresh()
+            #save the settings 
+            self.store_settings()
+
+        def set_theme_dark():
+            # load dark colors preset
+            self.settings.set_theme(1)
+            # re-apply widget colors, (except in subviewframe)
+            self.redraw_colors()
+            # do a refresh to get all widgets in subviewframe
+            self.refresh()
+            #save the settings 
+            self.store_settings()
+
         
         ## add the menu stuff 
         self.menubar = Menu(self.root)
+
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="New Database", command=new_db)
         self.filemenu.add_command(label="Open Database", command=open_db)
         self.filemenu.add_command(label="Quit", command=exit_program)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+        self.viewmenu = Menu(self.menubar, tearoff=0)
+        ## submenu
+        self.theme_submenu = Menu(self.viewmenu, tearoff=0)
+        self.theme_submenu.add_command(label='Default', command=set_theme_default)
+        self.theme_submenu.add_command(label='Dark', command=set_theme_dark)
+        self.viewmenu.add_cascade(label="Themes", menu=self.theme_submenu)
+        
+        self.menubar.add_cascade(label="View", menu=self.viewmenu)
         
         self.helpmenu = Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label="Info", command=show_info)
@@ -140,11 +200,11 @@ class MyGUI:
 
         ## defining the area on the left of the program that will hold
         ## the search feature
-        self.mainSearchFrame = Frame(self.root, highlightbackground="blue")
+        self.mainSearchFrame = Frame(self.root, bg=self.settings.get_bg_color())
         self.mainSearchFrame.pack(side=LEFT)
 
         ## defining a container to hold the search field and button
-        self.searchFrame = Frame(self.mainSearchFrame)
+        self.searchFrame = Frame(self.mainSearchFrame, bg=self.settings.get_bg_color())
         self.searchFrame.pack()
 
         ## defining the search field and button
@@ -167,7 +227,7 @@ class MyGUI:
         ## defining the main right area of the program. This area
         ## will hold the search results, and will show all the
         ## STL projects in general.
-        self.mainViewFrame = LabelFrame(self.root, text='Results')
+        self.mainViewFrame = LabelFrame(self.root, text='Results', bg=self.settings.get_bg_color())
         self.mainViewFrame.pack(side=RIGHT, fill="both", expand=True, padx=25, pady=25)
 
 
@@ -197,11 +257,12 @@ class MyGUI:
         ## while mainViewFrame holds the entire right side of the program, 
         ## subViewframe is a container that will keep the the results element frame 
         ## and the scrollbar together  
+        #self.subViewFrame = Frame(self.mainViewFrame, bg=self.settings.get_comp_color())
         self.subViewFrame = Frame(self.mainViewFrame)
         ## must pack subViewFrame later
 
         ## make a canvas (needed to support scrollable frame
-        self.canvas = Canvas(self.subViewFrame)
+        self.canvas = Canvas(self.subViewFrame, bg=self.settings.get_comp_color())
 
         ## making the scrollbar
         ### note: scrollable frame are a HUGE PAIN! 
@@ -210,7 +271,7 @@ class MyGUI:
         self.sb.pack(side='right', fill="y", expand=0)
 
         ## make a frame that will only hold the results elements
-        self.elementFrame = Frame(self.canvas)
+        self.elementFrame = Frame(self.canvas, bg=self.settings.get_comp_color())
         ### DONT PACK THE ELEMENTFRAME!!! Its handled by the canvas window
 
         self.elementFrame.bind(
@@ -270,7 +331,7 @@ class MyGUI:
         ## with a botton and a label for each project
         listPlace = 0
         for project in projectList:
-            tempFrame = Frame(elementFrame)
+            tempFrame = Frame(elementFrame, bg=self.settings.get_comp_color())
 
 
             ###   --- set up the images here ---
@@ -307,10 +368,10 @@ class MyGUI:
                 # append "..." at the end 
                 sortenedProjectName = project[0:23] + '...'
                 # pack the appended variable
-                Label(tempFrame, text=sortenedProjectName).pack()
+                Label(tempFrame, text=sortenedProjectName, bg=self.settings.get_comp_color()).pack()
             else:
                 # just pack the project label
-                Label(tempFrame, text=project).pack()
+                Label(tempFrame, text=project, bg=self.settings.get_comp_color()).pack()
 
         
             ## put the built frame in the list
@@ -406,6 +467,11 @@ class MyGUI:
         conn.commit()
         conn.close()
         
+    def redraw_colors(self):
+        self.root.config(bg=self.settings.get_bg_color())
+        self.mainSearchFrame.config(bg=self.settings.get_bg_color())
+        self.searchFrame.config(bg=self.settings.get_bg_color())
+        self.mainViewFrame.config(bg=self.settings.get_bg_color())
 
 
     ## function to perform database a show all query in the database

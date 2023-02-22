@@ -54,12 +54,24 @@ class project_display_gui:
 
         ## explaination for Toplevel: https://stackoverflow.com/questions/20251161/tkinter-tclerror-image-pyimage3-doesnt-exist
         self.root = Toplevel()
-        self.root.geometry('550x700')
+        self.root.geometry('550x750')
 
         ## create a tooltip for help message on image button
-        #self.tip=Balloon(self.root)
         Pmw.initialise(self.root) #initializing it in the root window
         self.tip=Pmw.Balloon(self.root)
+
+
+        #self.text_color = '#363332'
+        self.text_color = 'white'
+        #self.bg_Color = '#adaca3'
+        #self.comp_color = '#A3A4AD'
+
+        self.bg_Color = '#424242'
+        #self.comp_color = '#bdbdbd'
+        self.comp_color = '#9e9e9e'
+        
+        #self.root.config(bg = self.bg_Color)
+        self.root.config(bg = self.MyGui.settings.get_bg_color())
 
         # get the project image out of the database
         tempImageBinary = self.get_db_image(self.project_id)
@@ -77,7 +89,7 @@ class project_display_gui:
 
         ## making the lable into a button, so that the user can edit the 
         ## image of the project file 
-        self.project_image_bt = Button(self.root, image=self.photo_img, 
+        self.project_image_bt = Button(self.root, image=self.photo_img,  
                 command=self.change_project_image)
 
         #self.tip.bind_widget(self.project_image_bt, balloonmsg="Click to change project image")
@@ -87,30 +99,34 @@ class project_display_gui:
 
 
         ## added edit button to change project name 
-        self.editBt = Button(self.root, text='Edit', command=self.edit_mode)
+        self.editBt = Button(self.root, text='Edit', bg=self.comp_color, command=self.edit_mode)
         self.editBt.pack(pady=10)
 
-        self.project_name_display_lb = Label(self.root, text='Project Name:', font=('Arial', 15))
+        self.project_name_display_lb = Label(self.root, text='Project Name:', font=('Arial', 17),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.project_name_display_lb.pack()
         
-        self.project_name_lb = Label(self.root, text=self.project_name, font=('Arial', 15))
+        self.project_name_lb = Label(self.root, text=self.project_name, font=('Arial', 15),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.project_name_lb.pack(pady=(5,15))
 
-        self.file_name_lb = Label(self.root, text='File Name:', font=('Arial', 15))
+        self.file_name_lb = Label(self.root, text='File Name:', font=('Arial', 17),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.file_name_lb.pack()
 
-        self.file_name = Label(self.root, text=self.get_file_name(self.project_name), font=('Arial', 15))
+        self.file_name = Label(self.root, text=self.get_file_name(self.project_name), font=('Arial', 15),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.file_name.pack(pady=(5,15))
 
 
 
-        self.downloadBt = Button(self.root, text="Download Files", 
+        self.downloadBt = Button(self.root, text="Download Files", bg=self.comp_color, 
                 command=partial(self.get_files, self.project_name))
         self.downloadBt.pack(padx=10, pady=10)
 
 
         ## need a delete button
-        self.deleteBt = Button(self.root, text="Delete Project", fg='red', command=self.confirm_delete)
+        self.deleteBt = Button(self.root, text="Delete Project", fg='red', bg=self.comp_color, command=self.confirm_delete)
         self.deleteBt.pack(padx=10, pady=10)
 
         self.root.mainloop()
@@ -351,7 +367,9 @@ class project_display_gui:
     def edit_mode(self):
         ## pull up a small dialog box asking for a new project name
         new_prod_name = tkinter.simpledialog.askstring(title='New project name', prompt="Please enter new project name")
-        self.set_project_name(new_prod_name)
+        # if cancel is not selected, change the project name
+        if(new_prod_name != None):
+            self.set_project_name(new_prod_name)
 
 
     def set_project_name(self, new_prod_name):
