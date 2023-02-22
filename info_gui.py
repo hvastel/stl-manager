@@ -9,7 +9,7 @@ class project_info:
 
         self.root = Toplevel()
         self.root.title("Info")
-        self.root.geometry('600x250')
+        self.root.geometry('1000x350')
         self.mainGui = mainGui
         self.bg_color = 'white'
         self.fg_color = 'black'
@@ -20,15 +20,18 @@ class project_info:
         self.db_size = self.format_bytes(self.get_db_size())
         self.project_count = self.get_project_cnt()
 
+        # setting background color
+        self.root.config(bg=self.mainGui.settings.get_bg_color())
 
         ## make main title label
-        self.main_title_lb = Label(self.root, text='Current Database Information', font=('Arial', 20))
-        self.main_title_lb.pack(padx=10, pady=10)
+        self.main_title_lb = Label(self.root, text='Current Database Information', font=('Arial', 24),
+                bg=self.mainGui.settings.get_bg_color(), fg=self.mainGui.settings.get_text_color())
+        self.main_title_lb.pack(padx=10, pady=30)
 
 
         ## make a frame to hold info
         self.info_frame = Frame(self.root, highlightbackground=self.fg_color, highlightthickness=2, bg=self.bg_color)
-        self.info_frame.pack(padx=10, pady=(0,10))
+        self.info_frame.pack(padx=70, pady=(0,70))
 
         # will need at least 8 labels 
         self.db_name_lb = Label(self.info_frame, text='Database Name:', font=('Arial', 15), bg=self.bg_color,
