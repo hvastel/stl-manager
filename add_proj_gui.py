@@ -16,8 +16,12 @@ class add_project_gui:
         self.root.title('Add Project')
         self.root.geometry('650x240')
 
+        # update background per theme
+        self.root.config(bg=self.MyGui.settings.get_bg_color())
+
         ## Label for project name
-        proj_name_lb = Label(self.root, text='Project Name', font=("Arial", 14))
+        proj_name_lb = Label(self.root, text='Project Name', font=("Arial", 14),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         proj_name_lb.pack(pady=(20, 5))
 
         ## entry for project name
@@ -25,11 +29,12 @@ class add_project_gui:
         self.proj_name_ent.pack(pady=(5,10))
 
         ## label for file location
-        self.proj_location_lb = Label(self.root, text='Project Location', font=("Arial", 14))
+        self.proj_location_lb = Label(self.root, text='Project Location', font=("Arial", 14),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.proj_location_lb.pack(pady=5)
 
         ## frame to hold the file entry and selector button 
-        self.location_subframe = Frame(self.root)
+        self.location_subframe = Frame(self.root, bg=self.MyGui.settings.get_bg_color())
         self.location_subframe.pack(padx=10, pady=5)
 
         ## entry for project file location

@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.11
+    version = 0.12
     
     text_color = 'black'
     bg_Color = '#d9d9d9' # light gray
@@ -83,6 +83,9 @@ class MyGUI:
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
+        ## set Icon 
+        self.root.iconphoto(True, PhotoImage(file='images/app-logo.png'))
+        # update program main background per theme
         self.root.config(bg=self.settings.get_bg_color())
         
 
