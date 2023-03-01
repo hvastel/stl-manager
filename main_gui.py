@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.12
+    version = 0.13
     
     text_color = 'black'
     bg_Color = '#d9d9d9' # light gray
@@ -464,7 +464,8 @@ class MyGUI:
             proj_name TEXT,
             file_name TEXT,
             proj_files BLOB,
-            proj_image BLOB
+            proj_image BLOB,
+            proj_notes TEXT
             )""")
 
         conn.commit()

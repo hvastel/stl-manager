@@ -8,22 +8,9 @@ from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
 import tkinter.simpledialog
 import os
-#from tkinter.tix import Balloon
 import Pmw
 
-
 db_file='stl_manager.db'
-
-## needed functions (number = priority)
-    # get_tags (4)
-    # set_tags (3)
-    # get_image (6)
-    # set_image (5)
-    # get_files (1)
-    # set_files (7) 
-    # set_project_name (8)
-    # delete_entry (2)
-    
 
 
 # Convert binary to digital data format
@@ -31,15 +18,6 @@ def convertToDigitalData(blobData, filename):
     with open(filename, 'wb') as file:
         filename = file.write(blobData)
     return filename
-
-
-
-##  function to open the file explorer selector 
-## and get the file address
-#def open_file_chooser():
-#    filename = askopenfilename()
-#    self.proj_file_loc_ent.insert(END,filename)
-
 
 
 
@@ -54,20 +32,27 @@ class project_display_gui:
 
         ## explaination for Toplevel: https://stackoverflow.com/questions/20251161/tkinter-tclerror-image-pyimage3-doesnt-exist
         self.root = Toplevel()
-        self.root.geometry('550x750')
+        self.root.geometry('950x950')
+
+
+        ## add two frames for the left and right sides 
+        self.left_frame = Frame(self.root)
+        self.right_frame = Frame(self.root)
+        self.left_frame.config(bg=self.MyGui.settings.get_bg_color())
+        self.right_frame.config(bg=self.MyGui.settings.get_bg_color())
+
+        self.left_frame.pack(side=LEFT, fill=Y, padx=(50,5), pady=50)
+        self.right_frame.pack(side=RIGHT, fill=Y, padx=(5,50), pady=50)
+
 
         ## create a tooltip for help message on image button
         Pmw.initialise(self.root) #initializing it in the root window
         self.tip=Pmw.Balloon(self.root)
 
 
-        #self.text_color = '#363332'
         self.text_color = 'white'
-        #self.bg_Color = '#adaca3'
-        #self.comp_color = '#A3A4AD'
 
         self.bg_Color = '#424242'
-        #self.comp_color = '#bdbdbd'
         self.comp_color = '#9e9e9e'
         
         #self.root.config(bg = self.bg_Color)
@@ -82,52 +67,86 @@ class project_display_gui:
         # in order to re-size the photoimage, we need to make it an Image first
         stl_img = Image.open("./tempImage")
         # now resize it 
-        resized_stl_img = stl_img.resize((250, 350))
+        #resized_stl_img = stl_img.resize((250, 350))
+        resized_stl_img = stl_img.resize((350, 450))
         ## now we have to use "ImageTk.PhotoImage, because the regular 
         ## PhotoImage only support png, and we want jpgs to work too
         self.photo_img = ImageTk.PhotoImage(resized_stl_img)
 
         ## making the lable into a button, so that the user can edit the 
         ## image of the project file 
-        self.project_image_bt = Button(self.root, image=self.photo_img,  
+        self.project_image_bt = Button(self.left_frame, image=self.photo_img,  
                 command=self.change_project_image)
 
-        #self.tip.bind_widget(self.project_image_bt, balloonmsg="Click to change project image")
         self.tip.bind(self.project_image_bt, "Click to change project image")
         
-        self.project_image_bt.pack(padx=10, pady=10)
+        self.project_image_bt.pack(padx=10, pady=(10,5))
+
+
+
+        # button subframe for download and delete buttons
+        self.bt_subframe = Frame(self.left_frame, bg=self.MyGui.settings.get_bg_color())
+        self.bt_subframe.pack(side=BOTTOM)
+
+        self.project_name_display_lb = Label(self.right_frame, text='Project Name:', font=('Arial', 18),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
+
+        self.project_name_display_lb.pack(pady=(75,5))
+        
+        self.project_name_lb = Label(self.right_frame, text=self.project_name, font=('Arial', 15),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
+        
+        self.project_name_lb.pack(pady=(5,15))
 
 
         ## added edit button to change project name 
-        self.editBt = Button(self.root, text='Edit', bg=self.comp_color, command=self.edit_mode)
-        self.editBt.pack(pady=10)
+        self.editBt = Button(self.right_frame, text='Edit', bg=self.comp_color, command=self.edit_mode)
+        self.editBt.pack()
 
-        self.project_name_display_lb = Label(self.root, text='Project Name:', font=('Arial', 17),
+
+        self.file_name_lb = Label(self.right_frame, text='File Name:', font=('Arial', 18),
                 fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
-        self.project_name_display_lb.pack()
         
-        self.project_name_lb = Label(self.root, text=self.project_name, font=('Arial', 15),
-                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
-        self.project_name_lb.pack(pady=(5,15))
+        self.file_name_lb.pack(pady=(40,5))
 
-        self.file_name_lb = Label(self.root, text='File Name:', font=('Arial', 17),
+        self.file_name = Label(self.right_frame, text=self.get_file_name(self.project_name), font=('Arial', 15),
                 fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
-        self.file_name_lb.pack()
 
-        self.file_name = Label(self.root, text=self.get_file_name(self.project_name), font=('Arial', 15),
-                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
         self.file_name.pack(pady=(5,15))
 
 
+        self.notes_lb = Label(self.right_frame, text='Notes', font=('Arial', 15),
+                fg=self.MyGui.settings.get_text_color(), bg=self.MyGui.settings.get_bg_color())
+        self.notes_lb.pack(pady=(110,5))
 
-        self.downloadBt = Button(self.root, text="Download Files", bg=self.comp_color, 
+        ## need a text widget for the notes
+        self.notes_textwidget = Text(self.right_frame, width=30, height=10, font=('Arial',14), wrap=WORD)
+        self.notes_textwidget.pack()
+
+        ## load the notes from the db
+        try:
+            self.get_notes()
+        except:
+            pass
+
+        # button to update notes
+        self.notes_bt = Button(self.right_frame, text='Update', command=self.set_notes)
+        self.notes_bt.pack(pady=5)
+
+
+        #self.downloadBt = Button(self.root, text="Download Files", bg=self.comp_color, 
+        #        command=partial(self.get_files, self.project_name))
+        self.downloadBt = Button(self.bt_subframe, text="Download Files", bg=self.comp_color, 
                 command=partial(self.get_files, self.project_name))
+
         self.downloadBt.pack(padx=10, pady=10)
 
 
         ## need a delete button
-        self.deleteBt = Button(self.root, text="Delete Project", fg='red', bg=self.comp_color, command=self.confirm_delete)
-        self.deleteBt.pack(padx=10, pady=10)
+        #self.deleteBt = Button(self.root, text="Delete Project", fg='red', bg=self.comp_color, command=self.confirm_delete)
+        #self.deleteBt.pack(padx=10, pady=10)
+        self.deleteBt = Button(self.bt_subframe, text="Delete Project", fg='red', bg=self.comp_color, command=self.confirm_delete)
+        self.deleteBt.pack(padx=10, pady=(10,100))
 
         self.root.mainloop()
 
@@ -397,3 +416,53 @@ class project_display_gui:
             # close the db
             conn.close()
 
+
+    def set_notes(self):
+
+        ## get the contents of the notes text widget 
+        note_text = self.notes_textwidget.get("1.0", "end-1c") 
+
+        ## write them to the db
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
+        c = conn.cursor()
+
+        statement = 'UPDATE projects SET proj_notes = (?) where proj_id = (?)'
+
+        try: 
+            c.execute(statement, (note_text,self.project_id,))
+            conn.commit()
+        except:
+            print("Error: attempted to update project notes, db error")
+            messagebox.showerror(title="Update Status", message="Unable to update project notes")
+
+        conn.close()
+
+
+        
+
+
+    def get_notes(self):
+
+        #note_text = 'This is just some test text '
+
+        # get the db record for the notes
+        conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
+        c = conn.cursor()
+
+        statement = 'SELECT proj_notes FROM projects WHERE proj_id = (?)'
+
+        try: 
+            c.execute(statement, (self.project_id,))
+            conn.commit()
+        except:
+            #print("Error: Unable to get notes text from database")
+            pass
+
+        output = c.fetchone()[0]
+        conn.close
+
+
+        ## place it in the notes text widget
+        if (output != None):
+            self.notes_textwidget.insert(END, output)
+        #print(output)
