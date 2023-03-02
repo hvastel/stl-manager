@@ -407,8 +407,8 @@ class project_display_gui:
             try:
                 c.execute(statement, (new_prod_name,self.project_id,))
                 conn.commit()
+                self.MyGui.refresh()
                 self.refresh()
-                #self.MyGui.refresh()
             except: 
                 print("Error: attempted to update project name, db error")
                 messagebox.showerror(title="Update Status", message="Unable to update project name")
@@ -443,9 +443,7 @@ class project_display_gui:
 
     def get_notes(self):
 
-        #note_text = 'This is just some test text '
-
-        # get the db record for the notes
+        # get the db record for the notes:
         conn = sqlite3.connect(os.path.expanduser(self.MyGui.settings.get_db_location()))
         c = conn.cursor()
 
