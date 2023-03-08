@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.13
+    version = 0.12
     
     text_color = 'black'
     bg_Color = '#d9d9d9' # light gray
