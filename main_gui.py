@@ -231,6 +231,11 @@ class MyGUI:
         ## will hold the search results, and will show all the
         ## STL projects in general.
         self.mainViewFrame = LabelFrame(self.root, text='Results', bg=self.settings.get_bg_color())
+
+
+        ## make the mainViewFrame match the theme
+        self.mainViewFrame.configure(background=self.settings.get_bg_color())
+        ## pack it
         self.mainViewFrame.pack(side=RIGHT, fill="both", expand=True, padx=25, pady=25)
 
 
