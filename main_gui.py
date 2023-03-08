@@ -16,7 +16,7 @@ from tkinter import messagebox
 
 class program_settings:
     db_location = '~/Documents/stl_manager.db'
-    version = 0.11
+    version = 0.12
     
     text_color = 'black'
     bg_Color = '#d9d9d9' # light gray
@@ -83,6 +83,9 @@ class MyGUI:
         self.root = Tk()
         self.root.title('STL Manager')
         self.root.geometry('1250x700')
+        ## set Icon 
+        self.root.iconphoto(True, PhotoImage(file='images/app-logo.png'))
+        # update program main background per theme
         self.root.config(bg=self.settings.get_bg_color())
         
 
@@ -228,6 +231,11 @@ class MyGUI:
         ## will hold the search results, and will show all the
         ## STL projects in general.
         self.mainViewFrame = LabelFrame(self.root, text='Results', bg=self.settings.get_bg_color())
+
+
+        ## make the mainViewFrame match the theme
+        self.mainViewFrame.configure(background=self.settings.get_bg_color())
+        ## pack it
         self.mainViewFrame.pack(side=RIGHT, fill="both", expand=True, padx=25, pady=25)
 
 
@@ -461,7 +469,8 @@ class MyGUI:
             proj_name TEXT,
             file_name TEXT,
             proj_files BLOB,
-            proj_image BLOB
+            proj_image BLOB,
+            proj_notes TEXT
             )""")
 
         conn.commit()
